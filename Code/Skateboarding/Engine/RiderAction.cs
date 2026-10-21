@@ -1,0 +1,12 @@
+namespace Skateboarding.Engine;
+
+internal enum RiderAction
+{
+	None,
+	Mount,
+	Dismount,
+	PickUp,
+	Drop,
+	Throw,
+	DropIn
+}

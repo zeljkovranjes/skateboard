@@ -1,0 +1,7 @@
+using Skateboarding.Core.Animation;
+
+namespace Skateboarding.Core.Physics;
+
+/// <summary>Primary and alternate owner masses with the final body descriptor.</summary>
+internal readonly record struct PhysicalRigBodyMassVariants(
+	PhysicalBodyMass Primary, PhysicalBodyMass Alternate, PhysicalBodyMassResult Descriptor );

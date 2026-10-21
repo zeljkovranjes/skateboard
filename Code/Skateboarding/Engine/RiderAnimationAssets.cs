@@ -1,0 +1,105 @@
+using System.Collections.Generic;
+using System.Linq;
+using Sandbox;
+using Skateboarding.Core.Animation;
+
+namespace Skateboarding.Engine;
+
+/// <summary>A clip set and the graph that plays it, read from the addon's own files.</summary>
+internal sealed class RiderAnimationAssets
+{
+	private RiderAnimationAssets( ClipSet clips, AnimationGraphDefinition graph )
+	{
+		Clips = clips;
+		Graph = graph;
+		if ( graph?.ClipBoneWeights is not null )
+		{
+			foreach ( var (name, weights) in graph.ClipBoneWeights )
+			{
+				var clip = clips.Find( name ) ?? throw new FormatException( $"Bone weights name missing clip {name}." );
+				clip.SetBoneWeights( weights );
+			}
+		}
+		if ( graph?.ClipLooping is not null )
+		{
+			foreach ( var (name, looping) in graph.ClipLooping )
+			{
+				var clip = clips.Find( name ) ?? throw new FormatException( $"Looping metadata names missing clip {name}." );
+				clip.Looping = looping;
+			}
+		}
+		Rig = graph?.Rig is null ? null : new EffectorRigAsset( graph.Rig, clips.Skeleton );
+		Hands = LoadHands( graph?.HandPoses, clips.Skeleton );
+		RetrievalProfile = BoardRetrievalProfile.Load( graph?.BoardRetrievalProfilePath );
+		if ( !string.IsNullOrWhiteSpace( graph?.PostureProfilePath ) )
+		{
+			if ( !FileSystem.Mounted.FileExists( graph.PostureProfilePath ) )
+				throw new FormatException( $"Posture profile is missing: {graph.PostureProfilePath}" );
+			var profile = Json.Deserialize<AnimationPostureProfile>( FileSystem.Mounted.ReadAllText( graph.PostureProfilePath ) )
+				?? throw new FormatException( "Posture profile is empty." );
+			Posture = profile.CreateProvider( clips.Skeleton );
+		}
+	}
+
+	internal ClipSet Clips { get; }
+	internal AnimationGraphDefinition Graph { get; }
+	internal EffectorRigAsset Rig { get; }
+	internal BoardRetrievalProfile RetrievalProfile { get; }
+	internal AnimationPostureTreeProvider Posture { get; }
+
+	/// <summary>Finger pose banks, one per hand; empty when the graph names none or one cannot be read.</summary>
+	internal IReadOnlyList<HandPoseBank> Hands { get; }
+
+	// A missing or unreadable bank leaves the fingers to follow their hands rather than losing the clips.
+	private static IReadOnlyList<HandPoseBank> LoadHands( List<HandPoseDefinition> hands, ClipSkeleton skeleton )
+	{
+		if ( hands is null || hands.Count == 0 )
+			return System.Array.Empty<HandPoseBank>();
+		var banks = new List<HandPoseBank>();
+		foreach ( var hand in hands )
+		{
+			if ( !FileSystem.Mounted.FileExists( hand.Bank ) )
+			{
+				Log.Warning( $"Hand pose bank not found in the data folder: {hand.Bank}" );
+				return System.Array.Empty<HandPoseBank>();
+			}
+			try
+			{
+				var bones = RawAnimationClipSet.Read( FileSystem.Mounted.ReadAllBytes( hand.Bank ) );
+				if ( skeleton.IndexOf( hand.Hand ) < 0 || bones.Find( hand.Clip ) is null
+					|| bones.Names.Any( name => skeleton.IndexOf( name ) >= 0 || banks.Any( bank => bank.Bones.Names.Contains( name ) ) ) )
+					throw new FormatException( $"it needs a clip {hand.Clip}, a hand bone {hand.Hand} in the clips and bone names of its own" );
+				banks.Add( new HandPoseBank( hand.Hand, AnimationPoseStreamKey.Encode( hand.Stream ), bones, hand.Clip ) );
+			}
+			catch ( Exception error ) when ( error is FormatException or ArgumentException )
+			{
+				Log.Warning( $"Hand pose bank {hand.Bank} cannot be used: {error.Message}" );
+				return System.Array.Empty<HandPoseBank>();
+			}
+		}
+		return banks;
+	}
+
+	/// <summary>Loads both files from <see cref="FileSystem.Mounted"/>; returns null and warns when either is missing.</summary>
+	internal static RiderAnimationAssets Load( string clipsPath, string graphPath )
+	{
+		if ( string.IsNullOrWhiteSpace( clipsPath ) || string.IsNullOrWhiteSpace( graphPath ) )
+			return null;
+		if ( !FileSystem.Mounted.FileExists( clipsPath ) || !FileSystem.Mounted.FileExists( graphPath ) )
+		{
+			Log.Warning( $"Rider animation files not found in the addon: {clipsPath}, {graphPath}" );
+			return null;
+		}
+		var clips = ClipSet.Read( FileSystem.Mounted.ReadAllBytes( clipsPath ) );
+		var graph = Json.Deserialize<AnimationGraphDefinition>( FileSystem.Mounted.ReadAllText( graphPath ) );
+		if ( !string.IsNullOrWhiteSpace( graph.RawPosePath ) )
+		{
+			if ( string.IsNullOrWhiteSpace( graph.AttributeBankPath ) )
+				throw new FormatException( "Raw rider poses require an accompanying attribute bank." );
+			var attributes = AnimationClipAttributeBank.Read( FileSystem.Mounted.ReadAllBytes( graph.AttributeBankPath ) );
+			var poses = RawAnimationClipSet.ReadWithAttributes( FileSystem.Mounted.ReadAllBytes( graph.RawPosePath ), attributes );
+			clips.BindRawPoses( poses );
+		}
+		return new RiderAnimationAssets( clips, graph );
+	}
+}

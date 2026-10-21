@@ -1,0 +1,34 @@
+{
+  "Title": "Skateboard",
+  "Type": "addon",
+  "Org": "notpointless",
+  "Ident": "chomnr_skateboard",
+  "Schema": 1,
+  "IncludeSourceFiles": false,
+  "Resources": "skater/*",
+  "PackageReferences": [
+    "lazyduchess.sboxdeck"
+  ],
+  "EditorReferences": null,
+  "Mounts": null,
+  "IsStandaloneOnly": false,
+  "AI": {
+    "EnableMcpCommunication": true
+  },
+  "Metadata": {
+    "StartupScene": "scenes/testing_scene.scene",
+    "ParentPackage": "facepunch.sandbox",
+    "Summary": "A rideable skateboard for Sandbox: press Use to ride, push, ollie, flip, grab and grind.",
+    "Description": "Spawn the skateboard from the Sandbox spawn menu, walk up to it and press Use to get on; Use again gets off. The rider wears your outfit, pushes, carves, ollies, flips, grabs and grinds marked rails. Bail and you ragdoll, then ride on from where you fell. Works in multiplayer: the host simulates the board and the rider drives it.",
+    "WebsiteUrl": "https://github.com/zeljkovranjes/skateboard",
+    "Tags": [
+      "gameplay",
+      "skateboard",
+      "vehicle",
+      "sandbox"
+    ],
+    "Compiler": {
+      "ReleaseMode": "Release"
+    }
+  }
+}

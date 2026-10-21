@@ -1,0 +1,9 @@
+{
+  "Prefab": "entity/skateboard.prefab",
+  "Title": "Skateboard",
+  "Description": "A skateboard you ride: walk up to it and press Use to get on, Use again to get off. Push, carve, ollie, flip, grab and grind; bail and you ragdoll, then ride on from where you fell.",
+  "Category": "Vehicles",
+  "IncludeCode": true,
+  "__references": [],
+  "__version": 0
+}

@@ -1,0 +1,17 @@
+bin/
+obj/
+.vs/
+*.user
+.sbox/
+Code/*.csproj
+Code/Properties/
+**/TestResults/
+DISCORD.md
+CLAUDE.md
+DEVLOG.md
+.claude/settings.local.json
+Assets/**/*_c
+Assets/**/*_d
+Libraries/
+.vscode/
+*.slnx

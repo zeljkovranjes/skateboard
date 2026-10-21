@@ -1,0 +1,106 @@
+{
+  "RootObject": {
+    "__guid": "5c4a997e-fa82-4887-9210-6177ec2ba571",
+    "__version": 2,
+    "Flags": 0,
+    "Name": "skateboard",
+    "Position": "0,0,0",
+    "Rotation": "0,0,0,1",
+    "Scale": "1,1,1",
+    "Tags": "skateboard",
+    "Enabled": true,
+    "NetworkMode": 2,
+    "NetworkFlags": 0,
+    "NetworkOrphaned": 1,
+    "NetworkTransmit": true,
+    "OwnerTransfer": 1,
+    "Components": [
+      {
+        "__type": "Sandbox.Rigidbody",
+        "__guid": "4c0bb85f-e586-4af6-b60a-f7134253bd28",
+        "__enabled": true,
+        "Flags": 0,
+        "AngularDamping": 0,
+        "EnableImpactDamage": true,
+        "EnhancedCcd": false,
+        "Gravity": false,
+        "GravityScale": 1,
+        "ImpactDamage": 0,
+        "InertiaScale": 1,
+        "LinearDamping": 0,
+        "Locking": {
+          "X": false,
+          "Y": false,
+          "Z": false,
+          "Pitch": false,
+          "Yaw": false,
+          "Roll": false
+        },
+        "MassCenterOverride": "0,0,0",
+        "MassOverride": 80,
+        "MinImpactDamageSpeed": 500,
+        "MotionEnabled": true,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "OverrideMassCenter": false,
+        "RigidbodyFlags": 0,
+        "SleepThreshold": 2,
+        "StartAsleep": false
+      },
+      {
+        "__type": "Skateboarding.Components.Skateboard",
+        "__guid": "fbe7e308-c894-4b3c-bc95-23fdc7daf6ee",
+        "__enabled": true,
+        "Flags": 0,
+        "BoardModel": {
+          "Id": "14784157-06f1-4930-a4cf-8392a03054bc",
+          "Path": "models/skateboard.vmdl"
+        },
+        "GenerateGeometry": true,
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null,
+        "Profile": null,
+        "HardestLanding": 15
+      },
+      {
+        "__type": "Skateboarding.Components.RideableSkateboard",
+        "__guid": "8ad1bc75-388e-441f-a42c-b22425413eee",
+        "__enabled": true,
+        "Flags": 0,
+        "AnimationClips": "skater/skater-corrected.sman",
+        "AnimationGraph": "skater/skater.graph.json",
+        "Board": {
+          "_type": "component",
+          "component_id": "fbe7e308-c894-4b3c-bc95-23fdc7daf6ee",
+          "go": "5c4a997e-fa82-4887-9210-6177ec2ba571",
+          "component_type": "Skateboard"
+        },
+        "FallbackBody": "models/citizen/citizen.vmdl",
+        "OnComponentDestroy": null,
+        "OnComponentDisabled": null,
+        "OnComponentEnabled": null,
+        "OnComponentFixedUpdate": null,
+        "OnComponentStart": null,
+        "OnComponentUpdate": null
+      }
+    ],
+    "Children": []
+  },
+  "ResourceVersion": 2,
+  "ShowInMenu": false,
+  "MenuPath": null,
+  "MenuIcon": null,
+  "DontBreakAsTemplate": false,
+  "__references": [
+    "lazyduchess.sboxdeck#7218"
+  ],
+  "__version": 2
+}
