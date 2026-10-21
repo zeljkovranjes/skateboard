@@ -2,8 +2,9 @@
 
 The rider's raw poses are mostly per-frame float keys, which LZ4 (the compression s&box code can read) barely shrinks.
 Arranged first they pack to about 62% of their size: the headers go first, then every key, each track's keys XORed
-with its previous frame's and the whole key stream split into four byte planes. The addon (Engine/PackedPoses.cs)
-reverses this byte for byte as it loads the file, so the clips play exactly as from the original.
+with its previous frame's and the whole key stream split into four byte planes. The addon
+(Engine/RiderFiles.cs and PackedPoseLayout.cs) reverses this byte for byte as it loads the file, so the clips play
+exactly as from the original.
 
 Usage: pack_poses.py <original.sman> <packed.sman>     (needs: pip install lz4 numpy)
 Packed layout: "SMZ1", u32 original length, u32 header length, then one LZ4 frame of headers + arranged keys.
