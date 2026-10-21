@@ -13,8 +13,9 @@ internal readonly record struct RiderKeys( bool Bail, bool Gesture, bool Mount, 
 	internal static RiderKeys Read( bool keyboardOnly )
 	{
 		using var scope = keyboardOnly ? Input.PlayerScope( Input.PlayerIndex.KeyboardAndMouse ) : null;
-		// On the board only: getting on and off is the board's own press, and there is no walking, picking up or
-		// throwing, so only the jump is read.
-		return new RiderKeys( false, false, false, false, Input.Pressed( SandboxActions.Ollie ), false, false, false );
+		// Getting on and off, picking up, dropping and throwing are the board's own (Use and attack); the rider reads only
+		// the jump and, on foot with the board in hand, the sprint.
+		return new RiderKeys( false, false, false, false, Input.Pressed( SandboxActions.Ollie ), Input.Down( SandboxActions.Slide ),
+			false, false );
 	}
 }

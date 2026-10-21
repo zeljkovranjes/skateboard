@@ -7,11 +7,16 @@ you ragdoll, then get up on foot where you landed. It works in multiplayer and i
 ## Using it
 
 1. Open the spawn menu and find **Skateboard** under the addon's entities (category **Vehicles**).
-2. Walk up to the board and press **Use** (E, or X on a controller).
+2. Walk up to the board and tap **Use** (E, or X on a controller) to get on, or hold it to pick the board up.
 3. Press **Use** again to step off; you stand beside the board.
+4. Anywhere on foot, hold **Use** while looking at nothing you can press: your board flies back to your hand from
+   wherever it is, like a hammer called home, and you carry it.
 
 While you ride, your own Sandbox player is put away: its movement, tools and body are switched off, and the skater on
-the deck takes its place, followed by the skate camera. The spawn menu and the rest of the game's UI keep working.
+the deck takes its place, followed by the skate camera. The HUD's hotbar and health are hidden while you ride the board
+and come back when you get off or carry it; the rest of the HUD stays as it is. A controls card, styled like Sandbox's
+own tool info, shows the board's keys top left (riding or carrying, keyboard or controller, with your bound keys) as you
+get on or pick the board up, fades after a few seconds and comes back whenever you stand still.
 
 ### Keyboard and mouse
 
@@ -43,6 +48,21 @@ the deck takes its place, followed by the skate camera. The spawn menu and the r
 
 Y and the bumpers are left to the game (the bumpers open the spawn and inspect menus).
 
+### Carrying the board
+
+| Action | Keyboard and mouse | Controller |
+| --- | --- | --- |
+| Walk, run | W A S D | Left stick |
+| Jump | Space | A |
+| Throw it down and ride on | Tap E | Tap X |
+| Drop it | Hold E | Hold X |
+| Throw it | Left mouse | Right trigger |
+| Call it back from anywhere | Hold E (on foot, not carrying) | Hold X |
+
+On foot with the board the skater answers the controls as your Sandbox player does: full speed in about 0.15 s, a
+stop in about 0.2 s, and turns at speed. Its legs walk and run with the Citizen's own stride while its arms keep the
+board.
+
 ## How it behaves
 
 - **Bails.** Land badly, hit the ground too hard or come down head first and the skater ragdolls with the board's
@@ -52,6 +72,14 @@ Y and the bumpers are left to the game (the bumpers open the spawn and inspect m
   where you stepped off. Ollie over curbs.
 - **Drops.** A flat, square landing rides away from drops of about 11 m (a 15 m/s landing); land tipped and you bail.
   The board's `Skateboard.HardestLanding` sets the limit.
+- **Calling it back.** Your board is the one you last rode or carried (or spawned). Held Use calls it from up to
+  2 km away (`RideableSkateboard.RecallRange`), through anything in the way: it shakes where it lies for a moment
+  (`RecallShake`, 0.6 s), lifting off the ground, then flies about a second from 30 m and at 70 m/s from farther. Everyone
+  hears it: a rumble with crackles of static as it shakes, a thunder crack as it tears loose, a deep whoosh as it flies and
+  a boom as it lands in your hand, all made in code (the addon ships no sound files). Not while you ride or carry a board,
+  and not while someone else has it.
+- **Powerslides.** Hold Shift (left trigger) at speed and the board turns across and scrubs to a stop in about two
+  seconds from a fast push; tap it to revert.
 
 ## Multiplayer
 

@@ -65,7 +65,7 @@ internal sealed class RiderAnimationAssets
 			}
 			try
 			{
-				var bones = RawAnimationClipSet.Read( FileSystem.Mounted.ReadAllBytes( hand.Bank ) );
+				var bones = RawAnimationClipSet.Read( PackedPoses.Read( hand.Bank ) );
 				if ( skeleton.IndexOf( hand.Hand ) < 0 || bones.Find( hand.Clip ) is null
 					|| bones.Names.Any( name => skeleton.IndexOf( name ) >= 0 || banks.Any( bank => bank.Bones.Names.Contains( name ) ) ) )
 					throw new FormatException( $"it needs a clip {hand.Clip}, a hand bone {hand.Hand} in the clips and bone names of its own" );
@@ -90,14 +90,14 @@ internal sealed class RiderAnimationAssets
 			Log.Warning( $"Rider animation files not found in the addon: {clipsPath}, {graphPath}" );
 			return null;
 		}
-		var clips = ClipSet.Read( FileSystem.Mounted.ReadAllBytes( clipsPath ) );
-		var graph = Json.Deserialize<AnimationGraphDefinition>( FileSystem.Mounted.ReadAllText( graphPath ) );
+		var clips = ClipSet.Read( PackedPoses.Read( clipsPath ) );
+		var graph = Json.Deserialize<AnimationGraphDefinition>( PackedPoses.ReadText( graphPath ) );
 		if ( !string.IsNullOrWhiteSpace( graph.RawPosePath ) )
 		{
 			if ( string.IsNullOrWhiteSpace( graph.AttributeBankPath ) )
 				throw new FormatException( "Raw rider poses require an accompanying attribute bank." );
-			var attributes = AnimationClipAttributeBank.Read( FileSystem.Mounted.ReadAllBytes( graph.AttributeBankPath ) );
-			var poses = RawAnimationClipSet.ReadWithAttributes( FileSystem.Mounted.ReadAllBytes( graph.RawPosePath ), attributes );
+			var attributes = AnimationClipAttributeBank.Read( PackedPoses.Read( graph.AttributeBankPath ) );
+			var poses = RawAnimationClipSet.ReadWithAttributes( PackedPoses.Read( graph.RawPosePath ), attributes );
 			clips.BindRawPoses( poses );
 		}
 		return new RiderAnimationAssets( clips, graph );
