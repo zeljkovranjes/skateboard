@@ -13,6 +13,8 @@
 						_class = "DefaultMaterialGroup"
 						remaps =
 						[
+							{ from = "MAT_GripTape_Black_GAME" to = "models/skateboard_game/mat_griptape_black_game.vmat" },
+							{ from = "MAT_GripTape_Black_GAME.vmat" to = "models/skateboard_game/mat_griptape_black_game.vmat" },
 							{ from = "GAME_deck" to = "models/skateboard_game/game_deck.vmat" },
 							{ from = "GAME_deck.vmat" to = "models/skateboard_game/game_deck.vmat" },
 							{ from = "GAME_hardware" to = "models/skateboard_game/game_hardware.vmat" },
