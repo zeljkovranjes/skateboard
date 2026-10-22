@@ -53,6 +53,8 @@ Wall rides that take - turning onto a wall no longer counts as crashing into it,
 Body flips off drops - ride off a roof or a big drop, grab and lean, and you flip: the drop below now counts toward the air a flip needs
 Settling follows the clips - a flip's front foot no longer lags its kick and snaps after it, and grabs, hand plants and runouts settle smoother at high frame rates
 Docs: darkslide, flip hold, and the front and back flips back (from a drop or right at a big kicker's lip), each checked as written on keys and pad
+Your skater's skin matches yours - the skater's legs no longer turn darker than yours as you get on and back as you get off: it is dressed from your own outfit, skin and eyes included, and follows it if your look changes
+Riding keeps the game's look - the riding view shows through the game's own camera, so its grading (tonemapping, bloom, ambient occlusion, reflections) is the same on and off the board, and every hand-over (getting on and off, the get-up after a bail, a throw, a drop, a call) eases the view between your eyes and the follow view over 0.45 s instead of cutting in a frame
 Rolling back down a slope - the skater no longer jumps sideways as the board turns round and rolls back (or as you push off from fakie)
 Tricks that land - the board no longer spins back after a shove-it, varial, hardflip or inward heelflip (it turned its whole half spin back in the air and landed up to 60 degrees round): it lands the way it was caught, flips are caught all the way round before you land, and a wind-up held diagonally no longer flickers between two wind-ups
 Braking foot on the ground - slowing down, the dragging foot now touches the ground instead of hanging about 3 in over it

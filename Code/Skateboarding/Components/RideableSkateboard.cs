@@ -96,6 +96,13 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 	private readonly List<GameObject> _hiddenHud = new();
 	private bool _hudHidden;
 	private GameObject _dressed;
+	// What the rider was dressed as (RiderOutfit.Signature of the player's body), the pieces put on it, and how long since
+	// the player's look was last compared with it: a look that changes (an outfit still loading as the ride began, or
+	// changed during it) is copied again.
+	private const float DressCompareSeconds = 0.5f;
+	private int _dressedAs;
+	private List<GameObject> _worn;
+	private TimeSince _dressCompared;
 	// Whether this client has put the riding player away, and whether that player is this client's own.
 	private bool _riding;
 	private bool _mine;
@@ -719,17 +726,25 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		if ( _camera.IsValid() )
 			return;
 		_gameCamera = Scene.Camera;
-		if ( _gameCamera.IsValid() )
-			_gameCamera.Enabled = false;
 		_camera = new GameObject( true, "Skate camera" );
 		_camera.NetworkMode = NetworkMode.Never;
 		// It shows its first frame from where the game's view was, until it has placed itself behind the rider.
 		if ( _gameCamera.IsValid() )
 			_camera.WorldTransform = _gameCamera.WorldTransform;
-		var view = _camera.Components.Create<CameraComponent>();
+		// The follow view is shown through the game's own camera, so it keeps the game's look and eases in and out of
+		// it (see SkateCameraHandOver); the skate camera's own only holds the follow pose, at the game camera's field of
+		// view. With no game camera it shows the view itself.
+		var view = _camera.Components.Create<CameraComponent>( !_gameCamera.IsValid() );
 		view.IsMainCamera = true;
 		view.Priority = 100;
+		if ( _gameCamera.IsValid() )
+		{
+			view.FovAxis = _gameCamera.FovAxis;
+			view.FieldOfView = _gameCamera.FieldOfView;
+		}
 		_camera.Components.Create<SkateCamera>().Target = Rider;
+		if ( _gameCamera.IsValid() )
+			_camera.Components.Create<SkateCameraHandOver>().TakeOver( _gameCamera, view );
 	}
 
 	private void StopRiding()
@@ -737,8 +752,14 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		_riding = false;
 		_takenPose = null;
 		ShowHud();
+		// The view eases back to the game's camera before the skate camera goes (one made before it did cuts there).
 		if ( _camera.IsValid() )
-			_camera.Destroy();
+		{
+			if ( _camera.Components.Get<SkateCameraHandOver>() is { } handOver )
+				handOver.HandBack();
+			else
+				_camera.Destroy();
+		}
 		_camera = null;
 		if ( _cardScreen.IsValid() )
 			_cardScreen.Destroy();
@@ -837,41 +858,26 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		_stowedPlayer = null;
 	}
 
-	// Every client dresses its own rider model in the player's clothing, once. The clothing is read while the player's
-	// body is put away, so disabled renderers are found too; with no body to read, the rider stays as it is.
+	// Every client dresses its own rider model as it sees the player's body dressed (RiderOutfit.CopyFrom: clothing, skin,
+	// eyes and shape), and again whenever that look changes. The look is read while the player's body is put away, so
+	// disabled renderers are found too; with no body to read, the rider stays as it is.
 	private void Dress()
 	{
-		if ( !Rider.IsValid() || _dressed == Rider || !Player.IsValid() )
+		if ( !Rider.IsValid() || !Player.IsValid() || (_dressed == Rider && _dressCompared < DressCompareSeconds) )
 			return;
+		_dressCompared = 0f;
 		var model = Rider.Components.Get<SkateRider>()?.VisualObject;
 		var body = model?.Components.Get<SkinnedModelRenderer>( FindMode.EverythingInSelf );
-		if ( !body.IsValid() )
-			return;
 		var own = PlayerBody( Player );
-		if ( !own.IsValid() )
+		if ( !body.IsValid() || !own.IsValid() )
 			return;
-		// The outfit hides the body under its clothes (body groups) and sets the skin: without them the bare body shows
-		// through the clothing.
-		body.BodyGroups = own.BodyGroups;
-		body.MaterialGroup = own.MaterialGroup;
-		body.MaterialOverride = own.MaterialOverride;
-		body.Tint = own.Tint;
-		// Clothing is what the player's body wears, merged onto its bones; held tools are not.
-		foreach ( var clothing in own.GameObject.Components.GetAll<SkinnedModelRenderer>( FindMode.EverythingInDescendants ) )
-		{
-			if ( clothing == own || clothing.Model is null || clothing.BoneMergeTarget != own )
-				continue;
-			var worn = new GameObject( model, true, clothing.GameObject.Name );
-			worn.NetworkMode = NetworkMode.Never;
-			var renderer = worn.Components.Create<SkinnedModelRenderer>();
-			renderer.Model = clothing.Model;
-			renderer.MaterialGroup = clothing.MaterialGroup;
-			renderer.MaterialOverride = clothing.MaterialOverride;
-			renderer.BodyGroups = clothing.BodyGroups;
-			renderer.Tint = clothing.Tint;
-			renderer.BoneMergeTarget = body;
-		}
+		var look = RiderOutfit.Signature( own );
+		if ( _dressed == Rider && look == _dressedAs )
+			return;
+		_worn ??= new List<GameObject>();
+		RiderOutfit.CopyFrom( own, body, _worn );
 		_dressed = Rider;
+		_dressedAs = look;
 	}
 
 	// The player's body pose as it is shown now, each bone's place in the world (for a rider of the same model to ease
