@@ -30,6 +30,7 @@ Riding in multiplayer - the host decides who rides; the rider's client owns and 
 Sleeping boards, distance posing, map gathering of only nearby shapes, faster edge welding and optimized local builds: a sleeping board costs nothing, a ridden one about 1.3 ms per physics step on a dense level, another player's rider about 0.14 ms a frame up close and less with distance
 # Animation
 The skater's clips load as the board appears, not as someone gets on, and the skater is never drawn in its bind pose
+Bonelesses and fastplants - holding a grab (R or F) and pushing off now plays the foot plant: the skater plants a foot on the ground and springs up with the board, instead of the board hopping straight into a grab
 Smooth board adjusts and grabs - letting the trick stick go in the air no longer straightens a leg in a frame, and a board adjust or late flip no longer starts with a jump of the arms
 Rolling back down a slope - the skater no longer jumps sideways as the board turns round and rolls back (or as you push off from fakie)
 Tricks that land - the board no longer spins back after a shove-it, varial, hardflip or inward heelflip (it turned its whole half spin back in the air and landed up to 60 degrees round): it lands the way it was caught, flips are caught all the way round before you land, and a wind-up held diagonally no longer flickers between two wind-ups
