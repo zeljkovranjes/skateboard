@@ -114,4 +114,6 @@ nothing, and another player's rider about 0.14 ms a frame up close, less with di
 - Publish from the s&box editor (the project's **Publish** button); the package is `notpointless.chomnr_skateboard`.
   Make sure `Libraries/` holds nothing before publishing: anything there is packaged with the addon.
 
-The board model is a placeholder (`lazyduchess.sboxdeck`); swap `Skateboard.BoardModel` on the prefab for your own.
+The board is the addon's own model in `Assets/models/skateboard_game`: `skateboard.vmdl` (`Skateboard.BoardModel`) and
+its lower levels of detail `skateboard_lod1.vmdl` and `skateboard_lod2.vmdl` (`Skateboard.BoardModelLevels`), switching at
+the thresholds of `skateboard.vmdl`'s LOD groups. Swap them on the prefab for your own.

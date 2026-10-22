@@ -6,9 +6,7 @@
   "Schema": 1,
   "IncludeSourceFiles": false,
   "Resources": "skater/*",
-  "PackageReferences": [
-    "lazyduchess.sboxdeck"
-  ],
+  "PackageReferences": [],
   "EditorReferences": null,
   "Mounts": null,
   "IsStandaloneOnly": false,

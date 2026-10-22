@@ -57,9 +57,19 @@
         "__enabled": true,
         "Flags": 0,
         "BoardModel": {
-          "Id": "14784157-06f1-4930-a4cf-8392a03054bc",
-          "Path": "models/skateboard.vmdl"
+          "Id": "02962ee9-a2b9-4616-b524-5b26e8b66f62",
+          "Path": "models/skateboard_game/skateboard.vmdl"
         },
+        "BoardModelLevels": [
+          {
+            "Id": "2527a414-99e3-4892-8831-fb092d70cd0b",
+            "Path": "models/skateboard_game/skateboard_lod1.vmdl"
+          },
+          {
+            "Id": "ddea21a3-ab3f-4edb-835c-060c0a807af2",
+            "Path": "models/skateboard_game/skateboard_lod2.vmdl"
+          }
+        ],
         "GenerateGeometry": true,
         "OnComponentDestroy": null,
         "OnComponentDisabled": null,
@@ -99,8 +109,6 @@
   "MenuPath": null,
   "MenuIcon": null,
   "DontBreakAsTemplate": false,
-  "__references": [
-    "lazyduchess.sboxdeck#7218"
-  ],
+  "__references": [],
   "__version": 2
 }

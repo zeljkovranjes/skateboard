@@ -1,0 +1,8 @@
+"Layer0"
+{
+	"shader" "shaders/complex.shader"
+	"TextureColor" "models/skateboard_game/textures/hardware_color_alpha.png"
+	"TextureRoughness" "models/skateboard_game/textures/hardware_rough.png"
+	"F_METALNESS_TEXTURE" "1"
+	"TextureMetalness" "models/skateboard_game/textures/hardware_metal.png"
+}

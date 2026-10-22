@@ -3,6 +3,8 @@
 ## 2026-10-21
 Title: First Ride
 ### Added
+# Art
+Game-ready board - the board is the addon's own model (Assets/models/skateboard_game): blue powered channels, a sticker-bombed underside and 270 community portraits, in three levels of detail (28,538, 12,801 and 4,923 triangles, switching at about 7 m and 17 m) whose trucks steer and wheels spin at every level. It rides on its own measurements (wheelbase 0.501 m, track 0.216 m, wheels 0.0328 m, ride height 0.074 m); the placeholder deck package is gone
 # Riding
 Rideable skateboard - a Sandbox entity (Vehicles) anyone can spawn and get on with Use: their own player is put away (movement, physics body, body, tools; its inventory stays on for the spawn menu), a skater in their outfit (clothes, body groups and skin copied from their body) rides the deck, followed by the skate camera, and Use again steps off beside the board. Getting off waits for the press that got on to be let go
 Controls - every skate control on Sandbox's own input actions, for keyboard and mouse and a controller (A push, B brake, left trigger powerslide, left stick click pump, X on and off)

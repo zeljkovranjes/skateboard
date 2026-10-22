@@ -1,0 +1,11 @@
+"Layer0"
+{
+	"shader" "shaders/complex.shader"
+	"TextureColor" "models/skateboard_game/textures/stickers_color_alpha.png"
+	"TextureRoughness" "models/skateboard_game/textures/stickers_rough.png"
+	"F_METALNESS_TEXTURE" "1"
+	"TextureMetalness" "models/skateboard_game/textures/stickers_metal.png"
+	"F_ALPHA_TEST" "1"
+	"TextureTranslucency" "models/skateboard_game/textures/stickers_trans.png"
+	"g_flAlphaTestReference" "0.5"
+}
