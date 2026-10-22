@@ -6,61 +6,68 @@ using Sandbox.UI;
 namespace Skateboarding.Engine.BoardEditing;
 
 /// <summary>
-/// The card that tells who a picked portrait shows. A large picture (the portrait's own image, their Steam avatar, or
-/// their initials) beside their name and handle; a line about them; how long they have been a member, how much they have
-/// posted and their team, as figures; what they work on as tags; their roles; and their links. It slides in from the right
-/// beside the board as a portrait is picked, each part following the one before, and out again as the portrait is let go.
-/// Its parts are made afresh for each person, so a card made before a reload never misses one.
+/// Who a picked portrait shows, as words over the blurred game with nothing behind them: their picture (the portrait's own
+/// image, their Steam avatar, or their initials) beside their name and handle; a line about them; how long they have been
+/// a member, how much they have posted and their team, as figures; what they work on; their roles; and their links. It
+/// comes in from the right once the board is pushed aside, each part following the one before, and goes out to the right
+/// as the portrait is let go. Its parts are made afresh for each person, so a card made before a reload never misses one.
 /// </summary>
 internal sealed class BoardEditorCard : Panel
 {
 	// Seconds the card is out for as it changes from one person to the next.
-	private const float ChangeOver = 0.16f;
+	private const float ChangeOver = 0.22f;
 
 	private bool _comingBack;
 	private PortraitInfo _next;
 	private RealTimeSince _sinceOut;
+	// Frames left before newly made parts are shown: each must be laid out once as hidden first, or it would appear in
+	// place at once instead of sliding in.
+	private int _revealIn;
 
 	public BoardEditorCard()
 	{
 	}
 
-	/// <summary>True while the card is shown, or coming back in with someone new.</summary>
-	internal bool Showing => HasClass( "shown" ) || _comingBack;
+	/// <summary>True while the card is shown, or coming (back) in.</summary>
+	internal bool Showing => HasClass( "shown" ) || _comingBack || _revealIn > 0;
 
 	/// <summary>Shows who <paramref name="person"/> is (sliding in, or changing over if the card is up already).</summary>
 	internal void Show( PortraitInfo person )
 	{
 		// Changing over from someone else: the card goes out and comes back in with the new person, so the change reads.
-		if ( Showing )
+		if ( HasClass( "shown" ) || _comingBack )
 		{
 			_next = person;
 			_comingBack = true;
 			_sinceOut = 0f;
+			_revealIn = 0;
 			SetClass( "shown", false );
 			return;
 		}
 		Fill( person );
-		SetClass( "shown", true );
+		_revealIn = 2;
 	}
 
 	internal void Hide()
 	{
 		_comingBack = false;
 		_next = null;
+		_revealIn = 0;
 		SetClass( "shown", false );
 	}
 
 	public override void Tick()
 	{
 		base.Tick();
+		if ( _revealIn > 0 && --_revealIn == 0 )
+			SetClass( "shown", true );
 		if ( !_comingBack || _sinceOut < ChangeOver )
 			return;
 		_comingBack = false;
 		if ( _next is not null )
 			Fill( _next );
 		_next = null;
-		SetClass( "shown", true );
+		_revealIn = 2;
 	}
 
 	// The card's parts for a person.
@@ -104,7 +111,10 @@ internal sealed class BoardEditorCard : Panel
 			}
 		}
 
-		Section( "Works on", "tags", "tag", person.Expertise );
+		// What they work on, as one line: "programming · gameplay · 3D modelling".
+		var expertise = person.Expertise?.Where( item => !string.IsNullOrWhiteSpace( item ) ).ToArray();
+		if ( expertise is { Length: > 0 } )
+			Section( "Works on", "tags", "tag", new[] { string.Join( "  ·  ", expertise ) } );
 		Section( "Roles", "roles", "role", person.Roles );
 		Section( "Find them", "links", "link", Links( person ) );
 	}

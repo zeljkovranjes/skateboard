@@ -11,8 +11,9 @@ namespace Skateboarding.Engine.BoardEditing;
 /// over and look at. Dragging with the left mouse button turns it, with the right (or middle) one moves it, the wheel
 /// zooms and a double click puts it back as it opened; on a controller the right stick turns it and the triggers zoom.
 /// Everything eases to where it is asked to go, so nothing jumps. The editor key, Esc, or B on a controller closes it.
-/// The community portraits on the underside grow under the mouse; a click on one pops it out, outlines it and brings in
-/// a card telling who it is (Esc or a click off it lets it go).
+/// The community portraits on the underside grow under the mouse; a click on one pops it out, outlines it and pushes the
+/// board aside to the left, and then who it is comes in from the right (Esc or a click off it lets it go: the words go
+/// out to the right, then the board comes back to the middle).
 /// </summary>
 internal sealed class BoardEditor : Panel
 {
@@ -37,6 +38,14 @@ internal sealed class BoardEditor : Panel
 	// A left press let go within this long (seconds) and this near (pixels) where it went down is a click, not a drag.
 	private const float ClickTime = 0.4f;
 	private const float ClickSlop = 5f;
+	// A picked portrait pushes the board aside, to the left, for who it is: the share of the view's width the board's
+	// middle moves by, how much further back it stands meanwhile, how long the push takes (seconds), how long after it
+	// starts the card comes in, and how long after the card goes the board comes back.
+	private const float AsideShare = 0.22f;
+	private const float AsideBack = 0.12f;
+	private const float AsideTime = 0.55f;
+	private const float CardAfter = 0.3f;
+	private const float BackAfter = 0.15f;
 
 	/// <summary>True while the editor is open on this client.</summary>
 	internal static bool IsOpen { get; private set; }
@@ -65,6 +74,13 @@ internal sealed class BoardEditor : Panel
 	private Vector2 _pressedAt;
 	private RealTimeSince _sincePressed;
 	private bool _pressedOnCard;
+	// How far the board is pushed aside (0 in the middle, 1 aside), eased from where it was to where it is going; and the
+	// person whose card comes in once the board is on its way.
+	private float _asideFrom;
+	private float _asideTo;
+	private RealTimeSince _sinceAside;
+	private PortraitInfo _coming;
+	private RealTimeSince _sinceComing;
 
 	/// <summary>The look the panel was made with (<see cref="BoardEditorStyles.Version"/>; 0 for one made before it was kept).</summary>
 	internal int Version { get; private set; }
@@ -105,6 +121,8 @@ internal sealed class BoardEditor : Panel
 		_shownPitch = _pitch;
 		_shownZoom = _zoom;
 		_shownShift = _shift;
+		_coming = null;
+		_asideFrom = _asideTo = 0f;
 		ShowBoard();
 		_hidden.Hide( scene, hide );
 		SetClass( "open", true );
@@ -123,6 +141,8 @@ internal sealed class BoardEditor : Panel
 		SinceClosed = 0f;
 		_turning = false;
 		_moving = false;
+		_coming = null;
+		_asideFrom = _asideTo = 0f;
 		Card.Hide();
 		_stage.Portraits.Choose( -1 );
 		SetClass( "pointing", false );
@@ -241,10 +261,10 @@ internal sealed class BoardEditor : Panel
 	// Esc: lets a picked portrait go if there is one, or else closes the editor.
 	private void Back()
 	{
-		if ( Card.Showing )
+		if ( Card.Showing || _coming is not null )
 		{
-			Card.Hide();
 			_stage.Portraits.Choose( -1 );
+			LetGo();
 			return;
 		}
 		Close();
@@ -253,14 +273,60 @@ internal sealed class BoardEditor : Panel
 	// A click on the board: picks the portrait under the mouse and shows who it is, or lets the picked one go.
 	private void Click() => Pick( _stage.Portraits.Pick( MouseRay() ) );
 
-	/// <summary>Picks a portrait (by its place among them; -1 for none) and shows who it is, or lets the picked one go.</summary>
+	/// <summary>
+	/// Picks a portrait (by its place among them; -1 for none): the board is pushed aside and then who it is comes in, or,
+	/// with the board aside already, the card changes over to them. None lets the picked one go.
+	/// </summary>
 	internal void Pick( int tile )
 	{
 		var id = _stage.Portraits.Choose( tile );
-		if ( PortraitDirectory.Find( id ) is { } person )
+		if ( PortraitDirectory.Find( id ) is not { } person )
+		{
+			LetGo();
+			return;
+		}
+		if ( _coming is not null )
+		{
+			_coming = person;
+			return;
+		}
+		if ( Card.Showing )
+		{
 			Card.Show( person );
-		else
-			Card.Hide();
+			return;
+		}
+		_coming = person;
+		_sinceComing = 0f;
+		Aside( 1f, 0f );
+	}
+
+	// The card goes out to the right, then the board comes back to the middle.
+	private void LetGo()
+	{
+		_coming = null;
+		Card.Hide();
+		Aside( 0f, BackAfter );
+	}
+
+	// Sets the board going aside (1) or back to the middle (0) from wherever it is now, after delay seconds.
+	private void Aside( float to, float delay )
+	{
+		if ( to == _asideTo )
+			return;
+		_asideFrom = AsideNow;
+		_asideTo = to;
+		_sinceAside = -delay;
+	}
+
+	// How far aside the board is now: slow out of the middle, quick across, slow into place.
+	private float AsideNow
+	{
+		get
+		{
+			var t = Math.Clamp( _sinceAside / AsideTime, 0f, 1f );
+			t = t < 0.5f ? 4f * t * t * t : 1f - MathF.Pow( 2f - 2f * t, 3f ) * 0.5f;
+			return _asideFrom + (_asideTo - _asideFrom) * t;
+		}
 	}
 
 	// The portrait under the mouse grows, and the cursor becomes a hand over it; none while the board is dragged.
@@ -331,8 +397,7 @@ internal sealed class BoardEditor : Panel
 		if ( _moving && Screen.Height > 0f )
 		{
 			// Inches the board moves per pixel dragged, so it stays under the cursor at the distance it is shown.
-			var view = 2f * MathF.Tan( BoardEditorStage.Fov * 0.5f * MathF.PI / 180f );
-			var perPixel = _stage.FitDistance * _shownZoom * view / Screen.Height;
+			var perPixel = ShownDistance * View / Screen.Height;
 			_shift += new Vector2( moved.x, -moved.y ) * perPixel;
 		}
 	}
@@ -345,11 +410,31 @@ internal sealed class BoardEditor : Panel
 		_shownPitch += (_pitch - _shownPitch) * step;
 		_shownZoom += (_zoom - _shownZoom) * step;
 		_shownShift += (_shift - _shownShift) * step;
+		// Who was picked comes in once the board is on its way aside.
+		if ( _coming is not null && _sinceComing >= CardAfter )
+		{
+			Card.Show( _coming );
+			_coming = null;
+		}
 		ShowBoard();
 		_stage.Portraits.Animate( RealTime.Delta );
 	}
 
-	private void ShowBoard() => _stage.Show( _shownYaw, _shownPitch, _stage.FitDistance * _shownZoom, _shownShift );
+	// The board as shown, pushed aside by a share of the view's width at the distance it stands (the same share at any
+	// zoom).
+	private void ShowBoard()
+	{
+		var distance = ShownDistance;
+		var wide = Screen.Height > 0f ? Screen.Width / Screen.Height : 16f / 9f;
+		var push = AsideShare * wide * View * distance * AsideNow;
+		_stage.Show( _shownYaw, _shownPitch, distance, _shownShift - new Vector2( push, 0f ) );
+	}
+
+	// Inches from the camera to the board as shown: zoomed, and a little further back while aside.
+	private float ShownDistance => _stage.FitDistance * _shownZoom * (1f + AsideBack * AsideNow);
+
+	// The view's height over the distance to what it shows.
+	private static float View => 2f * MathF.Tan( BoardEditorStage.Fov * 0.5f * MathF.PI / 180f );
 
 	private static float Dead( float value ) => MathF.Abs( value ) < StickDead ? 0f : value;
 }
