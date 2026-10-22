@@ -17,7 +17,7 @@ internal static class BoardEditorStyles
 	/// Raised whenever the look or the layout changes: an editor panel made before is made again as it next opens (a
 	/// panel parses its styles once, as it is made).
 	/// </summary>
-	internal const int Version = 7;
+	internal const int Version = 8;
 
 	internal const string Sheet = """
 		BoardEditor
@@ -50,6 +50,26 @@ internal static class BoardEditorStyles
 			right: 0;
 			bottom: 0;
 			pointer-events: none;
+		}
+		BoardEditor .exit
+		{
+			position: absolute;
+			right: 56px;
+			bottom: 40px;
+			font-size: 14px;
+			font-weight: 600;
+			letter-spacing: 1.6px;
+			text-transform: uppercase;
+			color: rgba( 255, 255, 255, 0.7 );
+			text-shadow: 0px 2px 14px rgba( 0, 0, 0, 0.55 );
+			cursor: pointer;
+			pointer-events: all;
+			transition: color 0.2s ease-out;
+		}
+		BoardEditor .exit:hover
+		{
+			color: white;
+			text-decoration: underline;
 		}
 		BoardEditor .modes
 		{

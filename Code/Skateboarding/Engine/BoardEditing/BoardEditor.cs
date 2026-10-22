@@ -95,6 +95,8 @@ internal sealed class BoardEditor : Panel
 	/// <summary>The look the panel was made with (<see cref="BoardEditorStyles.Version"/>; 0 for one made before it was kept).</summary>
 	internal int Version { get; private set; }
 
+	private readonly Label _exit;
+
 	internal BoardEditor()
 	{
 		Version = BoardEditorStyles.Version;
@@ -108,6 +110,10 @@ internal sealed class BoardEditor : Panel
 		_edit.Changed = Finished;
 		_modes = AddChild<BoardEditorModes>( "modes" );
 		_modes.Changed = ModeChanged;
+		// Exit, at the bottom right as in the docs: closes the editor with the mouse.
+		_exit = AddChild<Label>( "exit" );
+		_exit.Text = "Exit";
+		_exit.AddEventListener( "onclick", Close );
 	}
 
 	/// <summary>The modes along the top.</summary>
@@ -248,7 +254,7 @@ internal sealed class BoardEditor : Panel
 	protected override void OnMouseDown( MousePanelEvent e )
 	{
 		base.OnMouseDown( e );
-		_pressedOnCard = Within( e.Target, _card ) || Within( e.Target, _edit ) || Within( e.Target, _modes );
+		_pressedOnCard = Within( e.Target, _card ) || Within( e.Target, _edit ) || Within( e.Target, _modes ) || Within( e.Target, _exit );
 		if ( _pressedOnCard )
 			return;
 		if ( e.MouseButton == MouseButtons.Left )
