@@ -22,6 +22,7 @@ internal sealed class BoardEditorStage
 	private readonly GameObject _turntable;
 	private readonly GameObject _camera;
 	private GameObject _copy;
+	private BoardEditorPortraits _portraits;
 
 	internal BoardEditorStage( Scene scene )
 	{
@@ -33,6 +34,8 @@ internal sealed class BoardEditorStage
 			var camera = _camera.Components.Create<CameraComponent>();
 			camera.BackgroundColor = Color.Transparent;
 			camera.FieldOfView = FieldOfView;
+			camera.FovAxis = CameraComponent.Axis.Vertical;
+			_camera.Components.Create<Highlight>();
 			camera.ZNear = 1f;
 			camera.ZFar = 4000f;
 			_turntable = scene.CreateObject();
@@ -50,8 +53,11 @@ internal sealed class BoardEditorStage
 	/// <summary>How far back (inches) the camera stands to see the whole board with room round it.</summary>
 	internal float FitDistance { get; private set; } = 60f;
 
-	/// <summary>The camera's field of view (degrees).</summary>
+	/// <summary>The camera's field of view (degrees, top to bottom).</summary>
 	internal static float Fov => FieldOfView;
+
+	/// <summary>The community portraits on the board's underside (made on first use: a reload keeps a stage without).</summary>
+	internal BoardEditorPortraits Portraits => _portraits ??= new BoardEditorPortraits();
 
 	/// <summary>
 	/// Puts a copy of what is drawn of <paramref name="board"/> on the turntable, in place of any earlier copy, centred on
@@ -69,6 +75,7 @@ internal sealed class BoardEditorStage
 			var origin = deck.WorldTransform.WithScale( 1f );
 			var bounds = default( BBox );
 			var any = false;
+			GameObject deckPart = null;
 			foreach ( var source in board.Components.GetAll<ModelRenderer>( FindMode.EnabledInSelfAndDescendants ) )
 			{
 				if ( source.Model is null )
@@ -78,6 +85,9 @@ internal sealed class BoardEditorStage
 					LocalTransform = origin.ToLocal( source.WorldTransform )
 				};
 				Copy( source, part );
+				// The deck model the portrait layer is made to sit on.
+				if ( deckPart is null && source.Model.ResourcePath?.Contains( "skateboard_game/skateboard", StringComparison.OrdinalIgnoreCase ) == true )
+					deckPart = part;
 				var box = source.Model.Bounds.Transform( part.LocalTransform );
 				bounds = any ? bounds.AddBBox( box ) : box;
 				any = true;
@@ -86,7 +96,24 @@ internal sealed class BoardEditorStage
 			_copy.LocalPosition = -centre;
 			var radius = (any ? bounds.Size.Length : 34f) * 0.5f;
 			FitDistance = radius / MathF.Tan( FieldOfView * 0.5f * MathF.PI / 180f ) * Margin;
+			// A stage made before a reload added them has neither the vertical field of view nor the highlight.
+			var camera = _camera.Components.Get<CameraComponent>();
+			camera.FovAxis = CameraComponent.Axis.Vertical;
+			_camera.Components.GetOrCreate<Highlight>();
+			Portraits.Attach( _scene, deckPart );
 		}
+	}
+
+	/// <summary>The ray from the camera through a point of the view, <paramref name="size"/> pixels across.</summary>
+	internal Ray RayAt( Vector2 pixel, Vector2 size )
+	{
+		var camera = _camera.WorldTransform;
+		var tan = MathF.Tan( FieldOfView * 0.5f * MathF.PI / 180f );
+		var aspect = size.y > 0f ? size.x / size.y : 1f;
+		var x = (pixel.x / MathF.Max( size.x, 1f ) * 2f - 1f) * tan * aspect;
+		var y = (1f - pixel.y / MathF.Max( size.y, 1f ) * 2f) * tan;
+		var way = camera.Rotation.Forward + camera.Rotation.Right * x + camera.Rotation.Up * y;
+		return new Ray( camera.Position, way.Normal );
 	}
 
 	/// <summary>

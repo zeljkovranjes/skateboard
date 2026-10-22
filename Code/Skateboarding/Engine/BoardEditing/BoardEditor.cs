@@ -10,6 +10,8 @@ namespace Skateboarding.Engine.BoardEditing;
 /// over and look at. Dragging with the left mouse button turns it, with the right (or middle) one moves it, the wheel
 /// zooms and a double click puts it back as it opened; on a controller the right stick turns it and the triggers zoom.
 /// Everything eases to where it is asked to go, so nothing jumps. The editor key, Esc, or B on a controller closes it.
+/// The community portraits on the underside grow under the mouse; a click on one pops it out, outlines it and brings in
+/// a card telling who it is (Esc or a click off it lets it go).
 /// </summary>
 internal sealed class BoardEditor : Panel
 {
@@ -31,6 +33,9 @@ internal sealed class BoardEditor : Panel
 	// How it is turned as the editor opens: from a little to the side and above, the grip and a truck in view.
 	private const float StartYaw = 35f;
 	private const float StartPitch = 22f;
+	// A left press let go within this long (seconds) and this near (pixels) where it went down is a click, not a drag.
+	private const float ClickTime = 0.4f;
+	private const float ClickSlop = 5f;
 
 	/// <summary>True while the editor is open on this client.</summary>
 	internal static bool IsOpen { get; private set; }
@@ -53,6 +58,12 @@ internal sealed class BoardEditor : Panel
 	private float _shownPitch;
 	private float _shownZoom = 1f;
 	private Vector2 _shownShift;
+	// The portrait card, and where and when the left button went down (a press let go where it went down, quickly, is a
+	// click; one that moved is a drag), and whether it went down on the card.
+	private BoardEditorCard _card;
+	private Vector2 _pressedAt;
+	private RealTimeSince _sincePressed;
+	private bool _pressedOnCard;
 
 	internal BoardEditor()
 	{
@@ -60,7 +71,11 @@ internal sealed class BoardEditor : Panel
 		AcceptsFocus = true;
 		var view = AddChild<ScenePanel>( "view" );
 		_stage = new BoardEditorStage( view.RenderScene );
+		_card = AddChild<BoardEditorCard>( "card" );
 	}
+
+	// Made on first use as well: an editor made before a reload added it has none.
+	private BoardEditorCard Card => _card ??= AddChild<BoardEditorCard>( "card" );
 
 	/// <summary>
 	/// Opens the editor on <paramref name="board"/>, hiding <paramref name="hide"/> (the player, the rider and the board
@@ -92,6 +107,9 @@ internal sealed class BoardEditor : Panel
 		SinceClosed = 0f;
 		_turning = false;
 		_moving = false;
+		Card.Hide();
+		_stage.Portraits.Choose( -1 );
+		SetClass( "pointing", false );
 		SkateBindings.Blocked = false;
 		_hidden.Show();
 		Blur();
@@ -116,7 +134,7 @@ internal sealed class BoardEditor : Panel
 		if ( Input.EscapePressed )
 		{
 			Input.EscapePressed = false;
-			Close();
+			Back();
 			return;
 		}
 		var padClose = false;
@@ -134,6 +152,7 @@ internal sealed class BoardEditor : Panel
 			return;
 		}
 		Drag();
+		Hover();
 		Ease();
 		_hidden.Frame();
 	}
@@ -154,15 +173,24 @@ internal sealed class BoardEditor : Panel
 		if ( !e.Pressed || _justOpened )
 			return;
 		var button = Docs.DocsKeyNames.FromButton( e.Button );
-		if ( button == "escape" || button == SkateBindings.KeyOf( "board-editor" ) )
+		if ( button == "escape" )
+			Back();
+		else if ( button == SkateBindings.KeyOf( "board-editor" ) )
 			Close();
 	}
 
 	protected override void OnMouseDown( MousePanelEvent e )
 	{
 		base.OnMouseDown( e );
+		_pressedOnCard = Within( e.Target, _card );
+		if ( _pressedOnCard )
+			return;
 		if ( e.MouseButton == MouseButtons.Left )
+		{
 			_turning = true;
+			_pressedAt = Mouse.Position;
+			_sincePressed = 0f;
+		}
 		else if ( e.MouseButton is MouseButtons.Right or MouseButtons.Middle )
 			_moving = true;
 		_mouse = Mouse.Position;
@@ -172,7 +200,11 @@ internal sealed class BoardEditor : Panel
 	{
 		base.OnMouseUp( e );
 		if ( e.MouseButton == MouseButtons.Left )
+		{
 			_turning = false;
+			if ( !_pressedOnCard && _sincePressed < ClickTime && (Mouse.Position - _pressedAt).Length < ClickSlop )
+				Click();
+		}
 		else if ( e.MouseButton is MouseButtons.Right or MouseButtons.Middle )
 			_moving = false;
 	}
@@ -187,6 +219,49 @@ internal sealed class BoardEditor : Panel
 	{
 		base.OnMouseWheel( value );
 		_zoom = Math.Clamp( _zoom * MathF.Exp( value.y * ZoomPerNotch ), NearestZoom, FurthestZoom );
+	}
+
+	// Esc: lets a picked portrait go if there is one, or else closes the editor.
+	private void Back()
+	{
+		if ( Card.Showing )
+		{
+			Card.Hide();
+			_stage.Portraits.Choose( -1 );
+			return;
+		}
+		Close();
+	}
+
+	// A click on the board: picks the portrait under the mouse and shows who it is, or lets the picked one go.
+	private void Click()
+	{
+		var id = _stage.Portraits.Choose( _stage.Portraits.Pick( MouseRay() ) );
+		if ( PortraitDirectory.Find( id ) is { } person )
+			Card.Show( person );
+		else
+			Card.Hide();
+	}
+
+	// The portrait under the mouse grows, and the cursor becomes a hand over it; none while the board is dragged.
+	private void Hover()
+	{
+		var tile = _turning || _moving ? -1 : _stage.Portraits.Pick( MouseRay() );
+		_stage.Portraits.Hover( tile );
+		SetClass( "pointing", tile >= 0 );
+	}
+
+	private Ray MouseRay() => _stage.RayAt( Mouse.Position, Screen.Size );
+
+	// Whether a panel is the holder or inside it.
+	private static bool Within( Panel panel, Panel holder )
+	{
+		for ( var at = panel; at is not null; at = at.Parent )
+		{
+			if ( at == holder )
+				return true;
+		}
+		return false;
 	}
 
 	// Back to how it opened: turned to show the grip and a truck, the whole board in view, in the middle.
@@ -241,6 +316,7 @@ internal sealed class BoardEditor : Panel
 		_shownZoom += (_zoom - _shownZoom) * step;
 		_shownShift += (_shift - _shownShift) * step;
 		ShowBoard();
+		_stage.Portraits.Animate( RealTime.Delta );
 	}
 
 	private void ShowBoard() => _stage.Show( _shownYaw, _shownPitch, _stage.FitDistance * _shownZoom, _shownShift );
