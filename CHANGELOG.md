@@ -41,6 +41,7 @@ Getting off - Use steps off with the skater's own step-off. The player comes bac
 Smooth clip changes - every bone keeps the speed it had through a change of animation and settles onto the new one, so an arm swinging up through a pop no longer stops in a frame as a flip or shove-it leaves the ground (the board still plays its last clip out to the catch)
 One-shot animations hold - a move that outlasts its animation holds the animation's last pose instead of starting it over (a held hippy-jump crouch no longer bobs)
 Hippy jump height - the rider no longer flies a body length up (the jump's flight and the animation's own rise were added together); a quick crouch hops up upright and a full one leaps into the hurdle's lean
+Smooth steering - the skater leans into a turn and swaps sides without a jerk
 Rolling back down a slope - the skater no longer jumps sideways as the board turns round and rolls back (or as you push off from fakie)
 Tricks that land - the board no longer spins back after a shove-it, varial, hardflip or inward heelflip (it turned its whole half spin back in the air and landed up to 60 degrees round): it lands the way it was caught, flips are caught all the way round before you land, and a wind-up held diagonally no longer flickers between two wind-ups
 Braking foot on the ground - slowing down, the dragging foot now touches the ground instead of hanging about 3 in over it
