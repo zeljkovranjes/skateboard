@@ -89,7 +89,7 @@ public sealed class BoardFinishSystem : GameObjectSystem<BoardFinishSystem>
 		var parts = BoardModelParts.Of( model, skateboard.BoardModelLevels, out _ );
 		if ( parts is null || Deck( skateboard.GameObject ) is not { } deck )
 			return;
-		BoardFinishRenderers.Oil( deck, model, parts.Placement, look, BoardFinishMaterials.Shared );
+		BoardFinishRenderers.Heart( deck, model, parts.Placement, look, BoardFinishMaterials.Shared );
 	}
 
 	// The drawn deck the game made of the board's model.

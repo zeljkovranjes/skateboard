@@ -130,7 +130,7 @@ internal sealed class BoardEditorStage
 		{
 			BoardFinishRenderers.Apply( _copy.Components.GetAll<ModelRenderer>( FindMode.EverythingInSelfAndDescendants ),
 				look, BoardFinishMaterials.Shared );
-			BoardFinishRenderers.Oil( _deck, _model, _placement, look, BoardFinishMaterials.Shared );
+			BoardFinishRenderers.Heart( _deck, _model, _placement, look, BoardFinishMaterials.Shared );
 		}
 	}
 

@@ -145,7 +145,8 @@ nothing, and another player's rider about 0.14 ms a frame up close, less with di
 
 The board is the addon's own model in `Assets/models/skateboard_game`: `skateboard.vmdl` (`Skateboard.BoardModel`) and
 its lower levels of detail `skateboard_lod1.vmdl` and `skateboard_lod2.vmdl` (`Skateboard.BoardModelLevels`), switching at
-the thresholds of `skateboard.vmdl`'s LOD groups. Swap them on the prefab for your own.
+the thresholds of `skateboard.vmdl`'s LOD groups. Swap them on the prefab for your own. The heart's moving parts are
+`heart_pump.vmdl` (its `pump` loop played on each client, under the deck), left out of the board's own models.
 
 ## Credits
 

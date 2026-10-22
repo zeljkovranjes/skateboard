@@ -10,9 +10,9 @@ namespace SalvagedHeart.Components;
 /// board's turns and acceleration, overshoots a little and settles (<see cref="OilSloshSolver"/>). It goes on an object
 /// aligned with the board model (the model's own origin, rotation and unit scale). Cosmetic and per client: nothing is
 /// networked and nothing pushes back on the board. A teleport or a long frame stall starts the motion afresh. The oil is
-/// drawn under the tags of the object it sits on, so a camera leaving the board out leaves the oil out too. It steps and
-/// is placed as the frame is drawn (OnPreRender), after everything has moved the board: a board shown in a trick's pose,
-/// set late in the frame by its rider, carries its oil with it instead of leaving it a frame behind.
+/// drawn under the tags of the object it sits on, so a camera leaving the board out leaves the oil out too. It is placed
+/// again as the frame is drawn (OnPreRender), after everything has moved the board: a board shown in a trick's pose, set
+/// late in the frame by its rider, carries its oil with it instead of leaving it a frame behind.
 /// </summary>
 public sealed class HeartOilSlosh : Component
 {
@@ -52,7 +52,9 @@ public sealed class HeartOilSlosh : Component
 		ResetMotion();
 	}
 
-	protected override void OnPreRender()
+	protected override void OnPreRender() => _renderer?.Place( WorldTransform );
+
+	protected override void OnUpdate()
 	{
 		if ( OilMaterial is null || !float.IsFinite( UnitsPerMeter ) || UnitsPerMeter <= 0 )
 			return;

@@ -44,6 +44,12 @@ internal sealed class OilSloshRenderer : IDisposable
 		_object.Transform = transform;
 	}
 
+	/// <summary>Moves the oil drawn last to where <paramref name="transform"/> puts it now.</summary>
+	public void Place( Transform transform )
+	{
+		_object.Transform = transform;
+	}
+
 	/// <summary>Draws the oil under these tags (its board's), so whatever leaves the board out of view leaves the oil out.</summary>
 	public void Tag( ITagSet tags )
 	{
