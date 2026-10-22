@@ -4,6 +4,348 @@
   "Description": "A skateboard you ride: walk up to it and press Use to get on, Use again to get off. Push, carve, ollie, flip, grab and grind; bail and you ragdoll, then ride on from where you fell.",
   "Category": "Vehicles",
   "IncludeCode": true,
+  "PackageAssets": [
+    "sounds/skate/clank_1.vsnd",
+    "sounds/skate/clank_2.vsnd",
+    "sounds/skate/clank_3.vsnd",
+    "sounds/skate/clank_4.vsnd",
+    "sounds/skate/clank_5.vsnd",
+    "sounds/skate/clank_6.vsnd",
+    "sounds/skate/clank_7.vsnd",
+    "sounds/skate/grind_concrete.vsnd",
+    "sounds/skate/grind_metal.vsnd",
+    "sounds/skate/knock_1.vsnd",
+    "sounds/skate/knock_3.vsnd",
+    "sounds/skate/knock_5.vsnd",
+    "sounds/skate/knock_6.vsnd",
+    "sounds/skate/knock_7.vsnd",
+    "sounds/skate/land_1.vsnd",
+    "sounds/skate/land_2.vsnd",
+    "sounds/skate/land_3.vsnd",
+    "sounds/skate/land_4.vsnd",
+    "sounds/skate/land_5.vsnd",
+    "sounds/skate/land_6.vsnd",
+    "sounds/skate/land_7.vsnd",
+    "sounds/skate/land_8.vsnd",
+    "sounds/skate/pop_1.vsnd",
+    "sounds/skate/pop_2.vsnd",
+    "sounds/skate/pop_3.vsnd",
+    "sounds/skate/pop_4.vsnd",
+    "sounds/skate/pop_5.vsnd",
+    "sounds/skate/pop_6.vsnd",
+    "sounds/skate/powerslide.vsnd",
+    "sounds/skate/roll_park.vsnd",
+    "sounds/skate/roll_smooth.vsnd",
+    "sounds/skate/roll_street.vsnd",
+    "sounds/skate/roll_tile.vsnd",
+    "sounds/skate/roll_wood.vsnd",
+    "sounds/skate/slide.vsnd",
+    "models/skateboard_game/heart_pump.vmdl",
+    "models/skateboard_game/heart_blackoil.vmat",
+    "skater/community_portraits/community_portraits.prefab"
+  ],
+  "PackageFiles": [
+    {
+      "$reference_type": "filereference",
+      "path": "skater/skater-corrected.sman"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "skater/skater-left-hand-v5.sman"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "skater/skater-local-v5.sman"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "skater/skater-right-hand-v5.sman"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "skater/skater-attributes.smat"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "skater/skater.graph.json"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "skater/community_portraits/portraits.json"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/360-flip.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/360-shuvit.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/5-0.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/50-50.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/back-flip.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/bail.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/board-adjust.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/boardslide.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/brake.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/call-board.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/carry.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/christ-air.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/coffin.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/dark-catch.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/darkslide.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/drop-in.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/fakie.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/fastplant.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/flip-hold.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/front-flip.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/fs-shuvit.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/get-on-off.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/grab-crail.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/grab-indy.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/grab-melon.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/grab-mute.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/grab-nose.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/grab-nosecrail.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/grab-rocket.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/grab-seatbelt.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/grab-stale.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/grab-tail.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/grind-pop-out.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/hand-plant.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/hardflip.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/heelflip.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/hippy-jump.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/inward-heelflip.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/kick-turn.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/kickflip.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/laser-flip.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/late-flip.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/late-kickflip.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/lipslide.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/manual.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/no-comply.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/no-foot.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/nollie.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/nose-manual.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/nosegrind.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/noseslide.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/ollie.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/one-foot.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/plant.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/powerslide.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/pump.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/push.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/revert.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/runout.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/shuvit.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/slope.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/steer.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/superman.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/tailslide.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/throw.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/varial-heelflip.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/varial-kickflip.webp"
+    },
+    {
+      "$reference_type": "filereference",
+      "path": "docs/clips/wall-ride.webp"
+    }
+  ],
   "__references": [],
   "__version": 0
 }
