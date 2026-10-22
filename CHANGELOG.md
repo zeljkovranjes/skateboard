@@ -21,6 +21,7 @@ Riding in multiplayer - the host decides who rides; the rider's client owns and 
 Sleeping boards, distance posing, map gathering of only nearby shapes, faster edge welding and optimized local builds: a sleeping board costs nothing, a ridden one about 1.3 ms per physics step on a dense level, another player's rider about 0.14 ms a frame up close and less with distance
 # Animation
 The skater's clips load as the board appears, not as someone gets on, and the skater is never drawn in its bind pose
+Tricks that land - the board no longer spins back after a shove-it, varial, hardflip or inward heelflip (it turned its whole half spin back in the air and landed up to 60 degrees round): it lands the way it was caught, flips are caught all the way round before you land, and a wind-up held diagonally no longer flickers between two wind-ups
 Braking foot on the ground - slowing down, the dragging foot now touches the ground instead of hanging about 3 in over it
 Smoother everywhere - the whole pose settles after every foot and hand fit, so the last small snaps and jitters ease over (the worst in a riding session fell from 27.7 to 3.3)
 Standing idle - standing with the board, the skater no longer repeats the same 13 s: a 39 s idle generated from it with GenMM
