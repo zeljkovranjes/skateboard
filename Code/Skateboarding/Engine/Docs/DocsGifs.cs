@@ -38,6 +38,7 @@ internal static class DocsGifs
 		("inward-heelflip", "Inward heelflip on flat ground"),
 		("360-flip", "360 flip (tre flip) on flat ground"),
 		("laser-flip", "Laser flip on flat ground"),
+		("late-kickflip", "Ollie, then a late kickflip on the way down: the kickflip key tapped in the air (off a kicker)"),
 		("board-adjust", "Board shifted under the feet in the air without a grab: Space held in the air"),
 		("late-flip", "Ollie, then a late shove-it on the way down: Space tapped in the air (off a kicker for height)"),
 		("dark-catch", "Flip caught upside down (dark catch), grip side down"),
