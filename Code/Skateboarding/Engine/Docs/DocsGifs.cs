@@ -74,6 +74,7 @@ internal static class DocsGifs
 		("drop-in", "Board in hand on a ramp's deck facing over the lip, tap E, drop in and ride away"),
 		("hand-plant", "Hand plant on a quarter pipe lip, drop back in"),
 		("coffin", "Coffin: lying flat on the rolling board"),
+		("wall-ride", "The set's wall kicker: a long run-up with several pushes, rolled straight off the lip, riding the wall"),
 		("carry", "Pick the board up and walk with it"),
 		("throw", "Throw the board ahead while carrying it"),
 		("call-board", "Hold Use with no board in hand: it shakes and flies back to the hand"),

@@ -312,7 +312,7 @@ internal static class DocsContent
 			} ),
 
 		new( "slopes", "Spots", "Slopes and ramps",
-			"Gravity is free speed. Roll down slopes, drop in from the top and plant a hand on the lip.",
+			"Gravity is free speed. Roll down slopes, drop in from the top, plant a hand on the lip and ride the walls.",
 			null,
 			new DocsMove[]
 			{
@@ -328,6 +328,11 @@ internal static class DocsContent
 					"Plant a hand on the lip of a quarter pipe and hold a handstand, then drop back in.",
 					"Hold {hand-plant} as the board leaves the lip.",
 					"Hold {pad:hand-plant} as the board leaves the lip." ),
+				new( "wall-ride", "Wall ride",
+					"Ride along a wall for a moment: the board turns its wheels to the wall, rides it and drops off.",
+					"Find a kicker beside a wall, angled a little into it. Take a long run-up, pushing hard with {push} several times and right up to the kicker, then ride up it toward the wall and roll straight off the lip. Don't ollie: the pop costs the speed you need.",
+					"Find a kicker beside a wall, angled a little into it. Take a long run-up, pushing hard with {pad:push} several times and right up to the kicker, then ride up it toward the wall and roll straight off the lip. Don't ollie: the pop costs the speed you need.",
+					"Too slow and it does not stick: a short run-up is not enough." ),
 			} ),
 
 		new( "carrying", "On foot", "Carrying the board",
