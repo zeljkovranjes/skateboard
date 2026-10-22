@@ -54,6 +54,7 @@ Longer wall rides - the board arcs down the wall for about a second instead of d
 Grabs flow into the landing - a grab's hands no longer stop dead for a moment as the grab ends
 Board editor - carrying the board, press I (D-pad up) to look it over: the board alone in the middle of the screen over the game softly blurred, your character hidden; drag to turn it, right-drag to move it, scroll to zoom, double-click to reset, I or Esc to close (right stick, LT/RT and B on a controller). CONTROLS.md lists every key
 Board editor: drag works and nothing covers the board - a drag turns or moves the board until the button is let go (it ended at once: the game sees no mouse button while the editor has the mouse), and the title and hint bar are gone; the docs keep the controls
+Glow colour cycle - the board's glowing blue parts cycle red, green, yellow, blue and cyan, stepped every tenth of a second, each colour wiping along the board from tail to nose (1.5 s a colour). Every board shares the same few material copies, so the cost stays the same however many players ride
 Tricks 4, 8 and 0 land on the board - after a varial kickflip, inward heelflip or frontside shove-it your feet land on the deck instead of off its side
 Body flips off drops - ride off a roof or a big drop, grab and lean, and you flip: the drop below now counts toward the air a flip needs
 Settling follows the clips - a flip's front foot no longer lags its kick and snaps after it, and grabs, hand plants and runouts settle smoother at high frame rates
