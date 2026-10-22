@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Sandbox;
 using Sandbox.UI;
 
@@ -65,17 +66,32 @@ internal sealed class BoardEditor : Panel
 	private RealTimeSince _sincePressed;
 	private bool _pressedOnCard;
 
+	/// <summary>The look the panel was made with (<see cref="BoardEditorStyles.Version"/>; 0 for one made before it was kept).</summary>
+	internal int Version { get; private set; }
+
 	internal BoardEditor()
 	{
+		Version = BoardEditorStyles.Version;
 		StyleSheet.Parse( BoardEditorStyles.Sheet );
 		AcceptsFocus = true;
 		var view = AddChild<ScenePanel>( "view" );
 		_stage = new BoardEditorStage( view.RenderScene );
-		_card = AddChild<BoardEditorCard>( "card" );
+		_card = AddChild<Panel>( "card-slot" ).AddChild<BoardEditorCard>( "card" );
 	}
 
-	// Made on first use as well: an editor made before a reload added it has none.
-	private BoardEditorCard Card => _card ??= AddChild<BoardEditorCard>( "card" );
+	// The card, in its slot on the right; made on first use as well, and moved into the slot, for an editor made before a
+	// reload changed them.
+	private BoardEditorCard Card
+	{
+		get
+		{
+			var slot = Children.FirstOrDefault( child => child.HasClass( "card-slot" ) ) ?? AddChild<Panel>( "card-slot" );
+			_card ??= slot.AddChild<BoardEditorCard>( "card" );
+			if ( _card.Parent != slot )
+				_card.Parent = slot;
+			return _card;
+		}
+	}
 
 	/// <summary>
 	/// Opens the editor on <paramref name="board"/>, hiding <paramref name="hide"/> (the player, the rider and the board
@@ -159,12 +175,13 @@ internal sealed class BoardEditor : Panel
 
 	public override void OnDeleted()
 	{
-		if ( IsOpen )
+		// Only the open panel lets go: a closed one, made again with a newer look, must not close the one in its place.
+		if ( IsOpen && HasClass( "open" ) )
 		{
 			SkateBindings.Blocked = false;
 			_hidden.Show();
+			IsOpen = false;
 		}
-		IsOpen = false;
 		base.OnDeleted();
 	}
 
@@ -234,9 +251,12 @@ internal sealed class BoardEditor : Panel
 	}
 
 	// A click on the board: picks the portrait under the mouse and shows who it is, or lets the picked one go.
-	private void Click()
+	private void Click() => Pick( _stage.Portraits.Pick( MouseRay() ) );
+
+	/// <summary>Picks a portrait (by its place among them; -1 for none) and shows who it is, or lets the picked one go.</summary>
+	internal void Pick( int tile )
 	{
-		var id = _stage.Portraits.Choose( _stage.Portraits.Pick( MouseRay() ) );
+		var id = _stage.Portraits.Choose( tile );
 		if ( PortraitDirectory.Find( id ) is { } person )
 			Card.Show( person );
 		else

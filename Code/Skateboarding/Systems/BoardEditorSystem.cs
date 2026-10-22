@@ -98,6 +98,12 @@ public sealed class BoardEditorSystem : GameObjectSystem<BoardEditorSystem>
 			screen.ZIndex = 250;
 			screen.ScaleStrategy = ScreenPanel.AutoScale.FollowDesktopScaling;
 		}
+		// A panel made with an older look is made again (never while it is open).
+		if ( _editor is { IsValid: true } && _editor.Version != BoardEditorStyles.Version && !BoardEditor.IsOpen )
+		{
+			_editor.Delete();
+			_editor = null;
+		}
 		if ( _editor is null || !_editor.IsValid )
 		{
 			var root = _screen.Components.Get<ScreenPanel>()?.GetPanel();

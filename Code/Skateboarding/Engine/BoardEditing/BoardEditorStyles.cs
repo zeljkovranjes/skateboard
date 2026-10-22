@@ -2,11 +2,19 @@ namespace Skateboarding.Engine.BoardEditing;
 
 /// <summary>
 /// The board editor's look: the game behind softly blurred, darkened and a little greyed, so nothing behind the board
-/// pulls at the eye or flickers, and the board alone, sharp, in the middle. A picked portrait's card sits beside it:
-/// frosted glass, rounded, quiet greys and plain type with no accent colour, gliding in with its lines following on.
+/// pulls at the eye or flickers, and the board alone, sharp, in the middle. A picked portrait's card stands to its right,
+/// centred top to bottom: deep frosted glass with a faint sheen at the top, a large picture and name, figures set large
+/// over small capital labels, tags and links as pills, all in white and greys with no accent colour. It slides in from
+/// the right, each part a beat after the one before.
 /// </summary>
 internal static class BoardEditorStyles
 {
+	/// <summary>
+	/// Raised whenever the look or the layout changes: an editor panel made before is made again as it next opens (a
+	/// panel parses its styles once, as it is made).
+	/// </summary>
+	internal const int Version = 3;
+
 	internal const string Sheet = """
 		BoardEditor
 		{
@@ -26,6 +34,10 @@ internal static class BoardEditorStyles
 		{
 			display: flex;
 		}
+		BoardEditor.pointing
+		{
+			cursor: pointer;
+		}
 		BoardEditor .view
 		{
 			position: absolute;
@@ -35,159 +47,185 @@ internal static class BoardEditorStyles
 			bottom: 0;
 			pointer-events: none;
 		}
-		BoardEditor.pointing
+		BoardEditor .card-slot
 		{
-			cursor: pointer;
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			right: 56px;
+			width: 440px;
+			flex-direction: column;
+			justify-content: center;
+			pointer-events: none;
 		}
 		BoardEditor .card
 		{
-			position: absolute;
-			right: 64px;
-			top: 16%;
-			width: 360px;
 			flex-direction: column;
-			padding: 26px 26px 22px;
-			border-radius: 20px;
-			background-color: rgba( 22, 24, 30, 0.72 );
-			backdrop-filter: blur( 24px );
-			border: 1px solid rgba( 255, 255, 255, 0.08 );
-			box-shadow: 0px 24px 60px rgba( 0, 0, 0, 0.45 );
+			padding: 30px;
+			border-radius: 26px;
+			background-color: rgba( 16, 17, 21, 0.84 );
+			background-image: linear-gradient( to bottom, rgba( 255, 255, 255, 0.05 ), rgba( 255, 255, 255, 0 ) 45% );
+			backdrop-filter: blur( 30px );
+			border: 1px solid rgba( 255, 255, 255, 0.07 );
+			box-shadow: 0px 30px 80px rgba( 0, 0, 0, 0.5 );
 			color: white;
 			opacity: 0;
-			transform: translateY( 18px ) scale( 0.97 );
-			transition: opacity 0.28s ease-out, transform 0.36s ease-out;
+			transform: translateX( 32px );
+			transition: opacity 0.3s ease-out, transform 0.42s ease-out;
 			pointer-events: none;
 		}
 		BoardEditor .card.shown
 		{
 			opacity: 1;
-			transform: translateY( 0px ) scale( 1 );
+			transform: translateX( 0px );
 			pointer-events: all;
 		}
-		BoardEditor .card > *
+		BoardEditor .card > .head, BoardEditor .card > .about, BoardEditor .card > .stats, BoardEditor .card > .section
 		{
 			opacity: 0;
-			transform: translateY( 8px );
-			transition: opacity 0.3s ease-out, transform 0.34s ease-out;
+			transform: translateX( 14px );
+			transition: opacity 0.32s ease-out, transform 0.4s ease-out;
 		}
-		BoardEditor .card.shown > *
+		BoardEditor .card.shown > .head, BoardEditor .card.shown > .about, BoardEditor .card.shown > .stats,
+		BoardEditor .card.shown > .section
 		{
 			opacity: 1;
-			transform: translateY( 0px );
+			transform: translateX( 0px );
 		}
 		BoardEditor .card.shown > .about { transition-delay: 0.05s; }
-		BoardEditor .card.shown > .facts { transition-delay: 0.09s; }
-		BoardEditor .card.shown > .tags { transition-delay: 0.13s; }
-		BoardEditor .card.shown > .roles { transition-delay: 0.17s; }
-		BoardEditor .card.shown > .links { transition-delay: 0.21s; }
+		BoardEditor .card.shown > .stats { transition-delay: 0.1s; }
+		BoardEditor .card.shown > .section { transition-delay: 0.15s; }
 		BoardEditor .card .head
 		{
 			flex-direction: row;
 			align-items: center;
 		}
-		BoardEditor .card .avatar
+		BoardEditor .card .picture
 		{
-			width: 56px;
-			height: 56px;
+			width: 84px;
+			height: 84px;
 			flex-shrink: 0;
-			border-radius: 28px;
+			border-radius: 22px;
 			overflow: hidden;
 			justify-content: center;
 			align-items: center;
-			background-color: rgba( 255, 255, 255, 0.08 );
+			background-color: rgba( 255, 255, 255, 0.06 );
+			border: 1px solid rgba( 255, 255, 255, 0.08 );
 		}
 		BoardEditor .card .initials
 		{
-			font-size: 20px;
-			font-weight: 600;
-			color: rgba( 255, 255, 255, 0.7 );
+			font-size: 30px;
+			font-weight: 700;
+			color: rgba( 255, 255, 255, 0.5 );
 		}
-		BoardEditor .card .picture
+		BoardEditor .card .photo
 		{
 			position: absolute;
 			left: 0;
 			top: 0;
 			width: 100%;
 			height: 100%;
-			opacity: 0;
-			transition: opacity 0.4s ease-out;
-		}
-		BoardEditor .card .picture.loaded
-		{
-			opacity: 1;
 		}
 		BoardEditor .card .names
 		{
 			flex-direction: column;
-			margin-left: 14px;
+			flex-shrink: 1;
+			margin-left: 18px;
 		}
 		BoardEditor .card .name
 		{
-			font-size: 22px;
-			font-weight: 600;
-			color: rgba( 255, 255, 255, 0.95 );
+			font-size: 30px;
+			font-weight: 700;
+			letter-spacing: -0.5px;
+			color: white;
 		}
-		BoardEditor .card .username
+		BoardEditor .card .handle
 		{
-			font-size: 13px;
 			margin-top: 2px;
-			color: rgba( 255, 255, 255, 0.5 );
+			font-size: 15px;
+			color: rgba( 255, 255, 255, 0.45 );
 		}
 		BoardEditor .card .about
 		{
-			margin-top: 18px;
-			font-size: 14px;
-			line-height: 1.45;
-			color: rgba( 255, 255, 255, 0.8 );
+			margin-top: 22px;
+			font-size: 17px;
+			line-height: 1.5;
+			color: rgba( 255, 255, 255, 0.82 );
 		}
-		BoardEditor .card .facts
+		BoardEditor .card .stats
 		{
-			margin-top: 12px;
-			font-size: 12px;
-			color: rgba( 255, 255, 255, 0.5 );
+			flex-direction: row;
+			margin-top: 22px;
+			padding: 16px 0;
+			border-top: 1px solid rgba( 255, 255, 255, 0.07 );
+			border-bottom: 1px solid rgba( 255, 255, 255, 0.07 );
 		}
-		BoardEditor .card .tags
+		BoardEditor .card .stat
+		{
+			flex-direction: column;
+			flex-grow: 1;
+			flex-basis: 0;
+			padding-right: 10px;
+		}
+		BoardEditor .card .value
+		{
+			font-size: 20px;
+			font-weight: 600;
+			color: white;
+		}
+		BoardEditor .card .caption, BoardEditor .card .heading
+		{
+			font-size: 11px;
+			font-weight: 600;
+			letter-spacing: 1.2px;
+			text-transform: uppercase;
+			color: rgba( 255, 255, 255, 0.4 );
+		}
+		BoardEditor .card .caption
+		{
+			margin-top: 4px;
+		}
+		BoardEditor .card .section
+		{
+			flex-direction: column;
+			margin-top: 20px;
+		}
+		BoardEditor .card .heading
+		{
+			margin-bottom: 9px;
+		}
+		BoardEditor .card .tags, BoardEditor .card .links
 		{
 			flex-direction: row;
 			flex-wrap: wrap;
-			margin-top: 14px;
 		}
 		BoardEditor .card .tag
 		{
-			font-size: 12px;
-			padding: 4px 10px;
+			font-size: 13px;
+			padding: 6px 12px;
 			margin: 0 6px 6px 0;
-			border-radius: 12px;
-			background-color: rgba( 255, 255, 255, 0.07 );
-			color: rgba( 255, 255, 255, 0.82 );
+			border-radius: 14px;
+			background-color: rgba( 255, 255, 255, 0.08 );
+			color: rgba( 255, 255, 255, 0.86 );
+		}
+		BoardEditor .card .link
+		{
+			font-size: 13px;
+			padding: 6px 12px;
+			margin: 0 6px 6px 0;
+			border-radius: 14px;
+			border: 1px solid rgba( 255, 255, 255, 0.13 );
+			color: rgba( 255, 255, 255, 0.72 );
 		}
 		BoardEditor .card .roles
 		{
 			flex-direction: column;
-			margin-top: 8px;
 		}
 		BoardEditor .card .role
 		{
-			font-size: 13px;
-			margin-top: 4px;
-			color: rgba( 255, 255, 255, 0.72 );
-		}
-		BoardEditor .card .links
-		{
-			flex-direction: column;
-			margin-top: 16px;
-			padding-top: 12px;
-			border-top: 1px solid rgba( 255, 255, 255, 0.06 );
-		}
-		BoardEditor .card .link
-		{
-			font-size: 12px;
-			margin-top: 3px;
-			color: rgba( 255, 255, 255, 0.45 );
-		}
-		BoardEditor .card .empty
-		{
-			display: none;
+			margin-bottom: 4px;
+			font-size: 15px;
+			color: rgba( 255, 255, 255, 0.8 );
 		}
 		""";
 }

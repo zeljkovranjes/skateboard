@@ -18,7 +18,10 @@ internal static class PortraitDirectory
 
 	private const string DataPath = "skater/community_portraits/portraits.json";
 
-	// Made on first use (a reload keeps a static's value, so this is never a readonly field set once).
+	// Made on first use (a reload keeps a static's value, so this is never a readonly field set once), and read again
+	// when Version changes: people read by an earlier version keep its shape.
+	private const int Version = 2;
+	private static int _version;
 	private static Dictionary<string, PortraitInfo> _byId;
 
 	/// <summary>The person a portrait id shows, or null.</summary>
@@ -30,8 +33,9 @@ internal static class PortraitDirectory
 
 	private static void Load()
 	{
-		if ( _byId is not null )
+		if ( _byId is not null && _version == Version )
 			return;
+		_version = Version;
 		_byId = new Dictionary<string, PortraitInfo>( StringComparer.OrdinalIgnoreCase );
 		try
 		{
@@ -62,6 +66,7 @@ internal static class PortraitDirectory
 		Text( p, "main_organization" ),
 		Roles( p[ "memberships" ] ),
 		long.TryParse( Text( p, "steam_id64" ), out var steam ) ? steam : 0,
+		Text( p, "portrait_url" ),
 		Text( p, "sbox_profile" ),
 		Text( p, "steam_url" ),
 		Text( p, "github_url" ) );
