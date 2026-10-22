@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Sandbox;
 using Skateboarding.Engine;
 using Skateboarding.Systems;
@@ -127,6 +128,38 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 	private bool _boardTaken;
 	private Transform _carryFrom;
 	private bool _carryBegun;
+
+	// Getting on from where the player stood (no farther than StepOnReach inches from the board), the rider stands there,
+	// walks up to the board if it is further than a step and steps onto it, and whether it has been put there yet, and
+	// whether it is walking up (for no longer than WalkOnLongest seconds): put on the board at once, the body jumped from
+	// where the player stood across onto it.
+	private const float StepOnReach = 160f;
+	private const float WalkOnLongest = 3f;
+	// How hard the stick is pushed for the walk up (a walk, not a run).
+	private const float WalkOnPace = 0.45f;
+	private bool _stepOn;
+	private bool _stepBegun;
+	private bool _walkingOn;
+	private TimeSince _walkOnSince;
+
+	// The player's body, left showing as the player is put away until the rider's own body shows (at most
+	// ShownBodyLongest seconds): put away at once, neither body showed for a fifth of a second while the rider got ready.
+	private GameObject _shownBody;
+	private TimeSince _shownSince;
+	private const float ShownBodyLongest = 1f;
+
+	// Whether the rider has been put where the player was (picking the board up, or stepping onto it), or rides from the
+	// start: until then the player and the camera stay where they are.
+	private bool Placed => (!CarryStart || _carryBegun) && (!_stepOn || _stepBegun);
+
+	// The rider's body as it was last shown (each bone's place in the world, on every client), for the player's own body to
+	// ease across from as it is given back, over TakeOverBlend seconds: shown at once in its own pose, standing where it was
+	// put, it jumped 4-12 in in a frame as a throw, a drop or a step off handed back.
+	private Transform[] _riderShown;
+	private bool _riderShownValid;
+	private Transform[] _givenBackFrom;
+	private SkinnedModelRenderer _givenBackBody;
+	private TimeSince _givenBackSince;
 
 	protected override void OnStart()
 	{
@@ -266,17 +299,23 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 
 	protected override void OnUpdate()
 	{
+		// The rider's pose as last drawn is kept before the host may take the rider off below.
+		if ( _riding )
+			KeepRiderShown();
 		// The board's owner is whoever rode it last, so the host's own duties go by being the host.
 		if ( !Networking.IsActive || Networking.IsHost )
 			HostUpdate();
 		Dress();
 		var riding = RiderConnection != Guid.Empty && Rider.IsValid() && Player.IsValid();
+		if ( _riding )
+			ShowBodyUntilRider();
 		if ( riding && !_riding )
 			StartRiding( Connection.Local is { } local && local.Id == RiderConnection );
 		else if ( !riding && _riding )
 			StopRiding();
 		if ( _riding )
 			EaseFromPlayer();
+		EaseBodyBack();
 		if ( _riding && _mine )
 			RideUpdate();
 	}
@@ -297,6 +336,111 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		_wasBailed = Board.State.IsBailed;
 	}
 
+	// Every client: the player's body goes on showing, as it was, until the rider's own body is shown, and is put away the
+	// frame it is: the two bodies are never both shown, and never neither.
+	private void ShowBodyUntilRider()
+	{
+		if ( !_shownBody.IsValid() )
+			return;
+		var rider = Rider.IsValid() ? Rider.Components.Get<SkateRider>() : null;
+		var shown = rider.IsValid() && rider.VisualObject.IsValid() && rider.VisualObject.Active;
+		if ( !shown && _shownSince < ShownBodyLongest )
+		{
+			// Until then the rider's first poses are set (again each frame) to ease from the body as it is now shown: given
+			// once, the ease had mostly run by the time the rider showed, and the body jumped 4 in.
+			_takenPose = BodyPose( Player );
+			_takenPoseGiven = false;
+			return;
+		}
+		_shownBody.Enabled = false;
+		_shownBody = null;
+	}
+
+	// Every client, each frame as it is drawn: the bodies swap the frame the rider's shows, and the rider's pose is kept for
+	// the player's to ease back from.
+	protected override void OnPreRender()
+	{
+		if ( !_riding )
+			return;
+		ShowBodyUntilRider();
+		KeepRiderShown();
+	}
+
+	private void KeepRiderShown()
+	{
+		// A rider already taken off leaves the pose it was last shown in.
+		var rider = Rider.IsValid() ? Rider.Components.Get<SkateRider>() : null;
+		if ( !rider.IsValid() )
+			return;
+		var visual = rider.VisualObject;
+		var body = visual.IsValid() && visual.Active ? visual.Components.Get<SkinnedModelRenderer>() : null;
+		var scene = body.IsValid() ? body.SceneModel : null;
+		if ( scene is null || body.Model is null )
+		{
+			_riderShownValid = false;
+			return;
+		}
+		if ( _riderShown?.Length != body.Model.BoneCount )
+			_riderShown = new Transform[ body.Model.BoneCount ];
+		for ( var bone = 0; bone < _riderShown.Length; bone++ )
+			_riderShown[ bone ] = scene.GetBoneWorldTransform( bone );
+		_riderShownValid = true;
+	}
+
+	// Every client, as the player is given back: its body starts in the rider's last pose, where the rider was, and eases
+	// into its own.
+	private void GiveBodyBack( GameObject player )
+	{
+		var body = player.IsValid() ? PlayerBody( player ) : null;
+		_givenBackFrom = null;
+		if ( _riderShownValid && body.IsValid() && body.Model?.BoneCount == _riderShown.Length )
+		{
+			_givenBackFrom = new Transform[ _riderShown.Length ];
+			System.Array.Copy( _riderShown, _givenBackFrom, _riderShown.Length );
+			_givenBackBody = body;
+			_givenBackSince = 0f;
+		}
+		_riderShownValid = false;
+	}
+
+	private void EaseBodyBack()
+	{
+		if ( _givenBackFrom is null )
+			return;
+		var body = _givenBackBody;
+		var scene = body.IsValid() ? body.SceneModel : null;
+		// The body switched back on has its model again from the next frame: the ease starts once it does.
+		if ( scene is null && body.IsValid() && !_riding )
+		{
+			_givenBackSince = 0f;
+			return;
+		}
+		var progress = Math.Clamp( _givenBackSince / TakeOverBlend, 0f, 1f );
+		var fade = progress * progress * (3f - 2f * progress);
+		if ( scene is null || fade >= 1f || _riding )
+		{
+			if ( body.IsValid() )
+				body.ClearPhysicsBones();
+			_givenBackFrom = null;
+			_givenBackBody = null;
+			return;
+		}
+		var bones = body.Model.Bones.AllBones;
+		// The rider's pose is taken into the frame the model is drawn in this frame, its own pose into the one its animation
+		// was last worked out in: just switched back on and moved, the model's own frame is a frame behind, and the body
+		// was shown 6-8 in off for a frame and dipped 3 in.
+		var drawn = body.WorldTransform;
+		var animated = scene.Transform;
+		for ( var bone = 0; bone < _givenBackFrom.Length; bone++ )
+		{
+			var from = drawn.ToLocal( _givenBackFrom[ bone ] );
+			// Its own pose as its animation last gave it (the first frame, before it has given one, the rider's).
+			var to = fade > 0f && body.TryGetBoneTransformAnimation( bones[ bone ], out var own ) ? animated.ToLocal( own ) : from;
+			scene.SetBoneOverride( bone, new Transform( Vector3.Lerp( from.Position, to.Position, fade ),
+				Rotation.Slerp( from.Rotation, to.Rotation, fade ) ) );
+		}
+	}
+
 	// Every client: once the rider is up, its first poses ease across from the player's body as it was.
 	private void EaseFromPlayer()
 	{
@@ -305,7 +449,7 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		var rider = Rider.Components.Get<SkateRider>();
 		if ( !rider.IsValid() || !rider.VisualObject.IsValid() )
 			return;
-		rider.BlendFrom( _takenPose, TakeOverBlend );
+		rider.BlendFromWorld( _takenPose, TakeOverBlend );
 		_takenPoseGiven = true;
 	}
 
@@ -319,8 +463,10 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		// picked up where it lies.
 		if ( !_boardTaken && !Board.IsProxy )
 		{
-			if ( CarryStart )
+			if ( CarryStart || _stepOn )
 			{
+				if ( _stepOn )
+					Board.TurnUpright();
 				Board.SetRiderAttached( false );
 			}
 			else
@@ -348,13 +494,32 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 				return;
 			}
 		}
+		// Getting on from beside the board: the rider stands where the player stood, facing as it faced, and steps onto it
+		// (or, if it cannot step, gets straight on).
+		if ( _stepOn && !_stepBegun && _boardTaken && rider.VisualObject.IsValid() )
+		{
+			_stepBegun = true;
+			if ( !rider.StandAt( _carryFrom ) )
+			{
+				RequestGetOff();
+				return;
+			}
+			_walkingOn = true;
+			_walkOnSince = 0f;
+		}
+		if ( _walkingOn && !WalkOn( rider ) )
+		{
+			RequestGetOff();
+			return;
+		}
 		// The skate camera takes the screen once the rider is shown (its model appears with its first pose), and picking the
 		// board up once the rider stands where the player stood: sooner, it showed neither the player's body, put away, nor
 		// the rider's, and started on the board it swept across from there through the body.
-		if ( !_camera.IsValid() && (!CarryStart || _carryBegun) && rider.VisualObject.IsValid() && rider.VisualObject.Active )
+		if ( !_camera.IsValid() && Placed && rider.VisualObject.IsValid() && rider.VisualObject.Active )
 			FollowRider();
-		// The player object stays with the rider, so it is where the rider is when it comes back.
-		if ( Player.IsValid() && (!CarryStart || _carryBegun) )
+		// The player object stays with the rider, so it is where the rider is when it comes back (once its own body, shown
+		// until the rider's is, is put away: moved sooner, the body shown went with it).
+		if ( Player.IsValid() && Placed && !_shownBody.IsValid() )
 			Player.WorldPosition = Rider.WorldPosition;
 		if ( _sounding != rider )
 		{
@@ -369,8 +534,30 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 			rider.RequestThrow();
 	}
 
-	// The use control (SkateBindings), riding: gets off at once. Carrying: a tap throws the board down to ride, a hold
-	// drops it.
+	// Walking up to the board to get on: steps on as soon as it can, walking straight at it till then; if it has not got
+	// there in WalkOnLongest seconds it gets straight on. False if it cannot get on at all.
+	private bool WalkOn( SkateRider rider )
+	{
+		var mounted = rider.Mode != SkateRiderMode.Walking || rider.RequestMount();
+		if ( !mounted && _walkOnSince < WalkOnLongest )
+		{
+			// It walks itself up (the keys are not read meanwhile), setting off once its body is shown, standing where the
+			// player's was.
+			var shown = rider.VisualObject.Active;
+			if ( !shown )
+				_walkOnSince = 0f;
+			rider.ReadLocalInput = false;
+			rider.SetWalkInput( shown ? (Board.WorldPosition - rider.WorldPosition).WithZ( 0f ).Normal * WalkOnPace : Vector3.Zero );
+			return true;
+		}
+		_walkingOn = false;
+		rider.SetWalkInput( Vector3.Zero );
+		rider.ReadLocalInput = true;
+		return mounted || rider.Mount();
+	}
+
+	// The use control (SkateBindings), riding: the rider steps off (the player is handed back once it has, as after any
+	// step off), or gets off at once if it cannot. Carrying: a tap throws the board down to ride, a hold drops it.
 	private void ReadUse( SkateRider rider )
 	{
 		if ( !SkateBindings.Held( "use" ) )
@@ -388,7 +575,8 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		if ( rider.Mode == SkateRiderMode.Riding && !rider.IsInteracting )
 		{
 			_useSpent = true;
-			RequestGetOff();
+			if ( !rider.RequestDismount() )
+				RequestGetOff();
 		}
 		else if ( rider.Mode == SkateRiderMode.Carrying && _useHeld >= HoldToCarry && !rider.IsInteracting )
 		{
@@ -398,18 +586,19 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 	}
 
 	// Off the board and not carrying it (a bail, a runout or a step off, the board dropped or thrown), the player gets up
-	// on foot where the rider is once what it was doing has played out: a ragdoll come to rest, a run out, a drop or throw
-	// finished; or once it has been at it too long.
+	// on foot where the rider is once what it was doing has played out: a ragdoll come to rest and the get-up from it, a
+	// run out, a drop or throw finished to the end of its motion (given back as the board left the hand, the player's body
+	// took over mid-throw); or once it has been at it too long.
 	private void HandBackWhenDone( SkateRider rider )
 	{
-		if ( rider.Mode is SkateRiderMode.Riding or SkateRiderMode.Carrying || CarryStart && !_carryBegun )
+		if ( rider.Mode is SkateRiderMode.Riding or SkateRiderMode.Carrying || !Placed || _walkingOn )
 		{
 			_offBoard = 0f;
 			return;
 		}
 		if ( _fellAt is not null )
 			return;
-		var busy = rider.Mode == SkateRiderMode.Bailed || rider.IsInteracting;
+		var busy = rider.Mode == SkateRiderMode.Bailed || rider.IsInteracting || rider.GettingUp || rider.AnimationOverlay is not null;
 		if ( busy && _offBoard < GetUpAtLatest )
 			return;
 		_fellAt = Rider.WorldPosition;
@@ -429,6 +618,10 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		{
 			var body = PlayerBody( Player );
 			_carryFrom = new Transform( Player.WorldPosition, Rotation.FromYaw( (body.IsValid() ? body.WorldRotation : Player.WorldRotation).Yaw() ) );
+			_stepOn = !CarryStart && Board.WorldPosition.Distance( _carryFrom.Position ) <= StepOnReach
+				&& MathF.Abs( Vector3.Dot( Board.WorldRotation.Up, Vector3.Up ) ) >= 0.6f;
+			_stepBegun = false;
+			_walkingOn = false;
 		}
 		Stow( mine );
 		if ( !mine )
@@ -562,15 +755,30 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		}
 		// The host has already let go of the player by now, so the one put away here is the one given back: on foot where
 		// the rider was, facing its way, or beside the board having stepped off it.
+		var givenBack = _mine && _stowedPlayer.IsValid() ? _stowedPlayer.Components.Get<PlayerController>( FindMode.EverythingInSelfAndDescendants ) : null;
 		if ( _mine && _stowedPlayer.IsValid() )
 		{
 			var side = Rotation.FromYaw( WorldRotation.Yaw() ).Right * GetOffSide;
 			_stowedPlayer.WorldPosition = (_fellAt ?? WorldPosition + side) + Vector3.Up * GetOffLift;
-			if ( _fellAt is not null && _stowedPlayer.Components.Get<PlayerController>( FindMode.EverythingInSelfAndDescendants ) is { } controller )
-				controller.EyeAngles = controller.EyeAngles.WithYaw( _fellYaw );
+			// Switched back on, the controller takes its eyes' and its body's facing from the object's own turn (and sets
+			// that back to none): set only on its eyes, the player came back facing the world's north, turning round.
+			var facing = _fellAt is not null ? _fellYaw : WorldRotation.Yaw();
+			_stowedPlayer.WorldRotation = Rotation.FromYaw( facing );
+			if ( givenBack is not null )
+				givenBack.EyeAngles = givenBack.EyeAngles.WithYaw( facing );
 		}
 		_fellAt = null;
+		_shownBody = null;
+		var player = _stowedPlayer;
 		Unstow();
+		GiveBodyBack( player );
+		// It comes back standing: switched off it kept the speed it had as it got on, and walked on with it.
+		if ( givenBack is not null )
+		{
+			if ( givenBack.Body.IsValid() )
+				givenBack.Body.Velocity = Vector3.Zero;
+			givenBack.WishVelocity = Vector3.Zero;
+		}
 		_mine = false;
 	}
 
@@ -595,8 +803,15 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		}
 		foreach ( var component in _stowedComponents )
 			component.Enabled = false;
+		// The body itself (with its clothes) stays shown until the rider's is (see ShowBodyUntilRider).
+		var body = PlayerBody( Player );
+		_shownBody = body.IsValid() ? _stowedChildren.FirstOrDefault( child => body.GameObject.IsAncestor( child ) ) : null;
+		_shownSince = 0f;
 		foreach ( var child in _stowedChildren )
-			child.Enabled = false;
+		{
+			if ( child != _shownBody )
+				child.Enabled = false;
+		}
 		// Put away, the controller no longer clears what it was looking at: the board's "tap to ride" would stay on screen.
 		if ( Player.Components.Get<PlayerController>( FindMode.EverythingInSelf ) is { } controller )
 		{
@@ -659,8 +874,8 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		_dressed = Rider;
 	}
 
-	// The player's body pose as it is shown now, each bone in the body model's own space (what a rider of the same model
-	// overrides its bones with); null with no body to read.
+	// The player's body pose as it is shown now, each bone's place in the world (for a rider of the same model to ease
+	// from); null with no body to read.
 	private static Transform[] BodyPose( GameObject player )
 	{
 		var body = player.IsValid() ? PlayerBody( player ) : null;
@@ -669,7 +884,7 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 			return null;
 		var pose = new Transform[ body.Model.BoneCount ];
 		for ( var bone = 0; bone < pose.Length; bone++ )
-			pose[ bone ] = scene.Transform.ToLocal( scene.GetBoneWorldTransform( bone ) );
+			pose[ bone ] = scene.GetBoneWorldTransform( bone );
 		return pose;
 	}
 
