@@ -80,6 +80,12 @@ board.
   and not while someone else has it.
 - **Powerslides.** Hold Shift (left trigger) at speed and the board turns across and scrubs to a stop in about two
   seconds from a fast push; tap it to revert.
+- **Brake smoke.** Brake hard at speed (S) and smoke kicks up off the heel of the shoe you drag: white off the shoe,
+  greying as it drifts up and fades behind you, more the faster you go. It is drawn in code; the addon ships no
+  texture for it.
+- **Flick tricks on the mouse.** While right mouse is held the mouse is the trick stick. Like a thumbstick let go, it
+  springs back to centre when the mouse rests; only a windup, pulled down (or up, for a nollie) all the way, stays held
+  until you flick.
 
 ## Multiplayer
 
