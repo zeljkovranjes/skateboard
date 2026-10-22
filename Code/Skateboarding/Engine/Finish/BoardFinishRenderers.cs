@@ -14,7 +14,7 @@ internal static class BoardFinishRenderers
 {
 	// The names of the oil bath's and the beating heart's objects, under the deck.
 	private const string OilName = "Heart Oil";
-	private const string PumpName = "Heart Pump";
+	internal const string PumpName = "Heart Pump";
 
 	// The beating heart's model and the loop it beats to (a strong beat, a smaller one, recovery: 0.83 s).
 	private const string PumpModel = "models/skateboard_game/heart_pump.vmdl";

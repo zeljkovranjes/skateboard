@@ -89,7 +89,8 @@ internal sealed class BoardEditorStage
 			var placement = global::Transform.Zero;
 			foreach ( var source in board.Components.GetAll<ModelRenderer>( FindMode.EnabledInSelfAndDescendants ) )
 			{
-				if ( source.Model is null )
+				// The beating heart is the copy's own (Finish gives it one, beating), not a still copy of the board's.
+				if ( source.Model is null || source.GameObject.Name == BoardFinishRenderers.PumpName )
 					continue;
 				var part = new GameObject( _copy, true, source.GameObject.Name )
 				{
