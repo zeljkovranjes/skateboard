@@ -21,7 +21,7 @@ namespace Skateboarding.Engine;
 /// </summary>
 internal sealed class LocalSkateInput
 {
-	private int _charging;
+	private readonly PopKeyRelease _popKey = new();
 	private float _release;
 	private float _releaseX;
 	private float _releaseY;
@@ -112,14 +112,15 @@ internal sealed class LocalSkateInput
 	/// <summary>
 	/// The keyboard and mouse alone, whatever device the engine counts as last. move is the bound keys' movement on the
 	/// board (RidingMove). While not <paramref name="ready"/> (a trick still playing out on the ground) the mouse stick lets
-	/// go and no trick key starts a trick.
+	/// go and no trick key starts a trick. In the air (<paramref name="airborne"/>) the ollie or nollie key held longer than
+	/// a tap holds a board adjust, and letting it go pops nothing.
 	/// </summary>
-	internal SkateInput ReadKeys( bool goofy, float delta, Vector3 move, bool ready = true )
+	internal SkateInput ReadKeys( bool goofy, float delta, Vector3 move, bool ready = true, bool airborne = false )
 	{
 		using var scope = Input.PlayerScope( Input.PlayerIndex.KeyboardAndMouse );
 		var steer = _steer.Step( move.y, delta );
 		_steerKey = move.y;
-		var (flickX, flickY) = Keys( delta );
+		var (flickX, flickY) = Keys( delta, airborne );
 		if ( Flicking && ready )
 		{
 			var moved = new Vector2( Input.MouseDelta.x, -Input.MouseDelta.y );
@@ -141,7 +142,7 @@ internal sealed class LocalSkateInput
 			flickY = trick.Y;
 			// The ollie or nollie key held with a trick key (the nollie key picks a nollie) pops nothing more of its own.
 			_popSpent = true;
-			_charging = 0;
+			_popKey.Reset();
 			_release = 0f;
 		}
 		return Board( steer, flickX, flickY, goofy, delta );
@@ -179,21 +180,22 @@ internal sealed class LocalSkateInput
 	}
 
 	// The ollie key held winds up (the stick pulled back), the nollie key the other way; let go, the stick flicks the
-	// other way for a moment, toward a flip key held then. A manual key holds the stick part way back (the nose manual's
-	// part way forward). After a trick key the ollie and nollie keys do nothing until both are up.
-	private (float X, float Y) Keys( float delta )
+	// other way for a moment, toward a flip key held then (in the air only after a tap: held longer, the key was holding a
+	// board adjust). A manual key holds the stick part way back (the nose manual's part way forward). After a trick key
+	// the ollie and nollie keys do nothing until both are up.
+	private (float X, float Y) Keys( float delta, bool airborne )
 	{
 		var ollie = SkateBindings.Down( "ollie" );
 		var nollie = SkateBindings.Down( "nollie" ) && !ollie;
 		_popSpent &= ollie || nollie;
 		var charging = _popSpent ? 0 : ollie ? -1 : nollie ? 1 : 0;
-		if ( _charging != 0 && charging == 0 && !_popSpent )
+		var released = _popKey.Step( charging, airborne, delta );
+		if ( released != 0 )
 		{
 			_release = 0.06f;
 			_releaseX = FlipKeys();
-			_releaseY = -_charging;
+			_releaseY = -released;
 		}
-		_charging = charging;
 		// A flip key still held after the pop keeps the flip turning, as a stick held at the end of its flick does.
 		var held = FlipKeys();
 		var manual = (SkateBindings.Down( "nose-manual" ) ? ManualStick : 0f) - (SkateBindings.Down( "manual" ) ? ManualStick : 0f);
