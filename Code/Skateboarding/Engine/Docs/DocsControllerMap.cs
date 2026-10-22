@@ -13,7 +13,7 @@ internal static class DocsControllerMap
 	internal static void Add( Panel page )
 	{
 		page.AddChild<Label>( "h3" ).Text = "Sticks";
-		Row( page, "{ls}", "Left stick", "Steer, and turn the board across a rail in the air to slide" );
+		Row( page, "{ls}", "Left stick", "Steer, and turn the board across a rail in the air to slide. With a grab held as you leave a big drop or kicker: up for a front flip, down for a back flip" );
 		Row( page, "{rs}", "Right stick", "Pull back, then flick: forward for an ollie, up-left for a kickflip, up-right for a heelflip, left for a shove-it" );
 		Row( page, "{rs}", "Right stick, part way", "Held part way back or forward: a manual, or on a rail a 5-0 or nosegrind. Pointed as you grab: which grab" );
 		foreach ( var group in SkateBindings.All.Where( binding => !string.IsNullOrWhiteSpace( binding.Pad ) && binding.Group != "Trick keys" )
