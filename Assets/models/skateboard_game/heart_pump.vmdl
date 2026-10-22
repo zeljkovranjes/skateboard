@@ -6,6 +6,22 @@
 		children =
 		[
 			{
+				_class = "ModelModifierList"
+				children =
+				[
+					{
+						_class = "ModelModifier_ScaleAndMirror"
+						note = "Metres at the source, inches in the engine: scaled here, model-wide, so the pump's bones and its beat scale with its mesh (a mesh's own import_scale leaves the animation in metres)."
+						scale = 39.37007874015748
+						mirror_x = false
+						mirror_y = false
+						mirror_z = false
+						flip_bone_forward = false
+						swap_left_and_right_bones = false
+					},
+				]
+			},
+			{
 				_class = "MaterialGroupList"
 				children =
 				[
@@ -36,8 +52,8 @@
 					name = "LOD0"
 					filename = "models/skateboard_game/heart_pump.fbx"
 					import_translation = [ 0.0, 0.0, 0.0 ]
-					import_rotation = [ 0.0, -90.0, 0.0 ]
-					import_scale = 39.37007874015748
+					import_rotation = [ 0.0, 0.0, 0.0 ]
+					import_scale = 1.0
 					import_filter =
 					{
 						exclude_by_default = false
@@ -49,8 +65,8 @@
 					name = "LOD1"
 					filename = "models/skateboard_game/heart_pump_lod1.fbx"
 					import_translation = [ 0.0, 0.0, 0.0 ]
-					import_rotation = [ 0.0, -90.0, 0.0 ]
-					import_scale = 39.37007874015748
+					import_rotation = [ 0.0, 0.0, 0.0 ]
+					import_scale = 1.0
 					import_filter =
 					{
 						exclude_by_default = false
@@ -62,8 +78,8 @@
 					name = "LOD2"
 					filename = "models/skateboard_game/heart_pump_lod2.fbx"
 					import_translation = [ 0.0, 0.0, 0.0 ]
-					import_rotation = [ 0.0, -90.0, 0.0 ]
-					import_scale = 39.37007874015748
+					import_rotation = [ 0.0, 0.0, 0.0 ]
+					import_scale = 1.0
 					import_filter =
 					{
 						exclude_by_default = false

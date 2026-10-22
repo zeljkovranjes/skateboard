@@ -20,6 +20,10 @@ internal static class BoardFinishRenderers
 	private const string PumpModel = "models/skateboard_game/heart_pump.vmdl";
 	private const string PumpBeat = "pump";
 
+	// The quarter turn the board model's import rotation gives the board, which heart_pump.vmdl cannot take: the engine
+	// turns a model's meshes by it but not its animation, so the pump is imported unturned and its object turned here.
+	private static readonly Rotation PumpTurn = Rotation.FromYaw( -90f );
+
 	/// <summary>Draws each of <paramref name="renderers"/> in <paramref name="look"/>'s colours.</summary>
 	internal static void Apply( IEnumerable<ModelRenderer> renderers, BoardLook look, BoardFinishMaterials shared )
 	{
@@ -51,7 +55,9 @@ internal static class BoardFinishRenderers
 			return;
 		var oil = Holder( deck, OilName, placement ).Components.GetOrCreate<HeartOilSlosh>();
 		oil.OilMaterial = shared.Oil( look );
-		var pump = Holder( deck, PumpName, placement ).Components.GetOrCreate<SkinnedModelRenderer>();
+		var beating = Holder( deck, PumpName, placement );
+		beating.LocalTransform = placement.ToWorld( new Transform( Vector3.Zero, PumpTurn ) );
+		var pump = beating.Components.GetOrCreate<SkinnedModelRenderer>();
 		if ( pump.Model is null || pump.Model.ResourcePath != PumpModel )
 		{
 			pump.UseAnimGraph = false;
