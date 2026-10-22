@@ -25,6 +25,12 @@ internal static class SandboxActions
 	/// <summary>Gets on and off the board (keyboard E, controller X: Sandbox's Use).</summary>
 	internal const string GetOff = "Use";
 
+	/// <summary>
+	/// The trick keys, one trick each (<see cref="TrickButtons.Tricks"/>): Q and 1 to 4, the game's spawn menu and first
+	/// inventory slots, which a ride takes for itself (<see cref="Systems.RideKeys"/>).
+	/// </summary>
+	internal static readonly string[] TrickKeys = { "SpawnMenu", "Slot1", "Slot2", "Slot3", "Slot4" };
+
 	// The controller's buttons by position, as Sandbox binds them. Y has no action there, and the bumpers open its spawn
 	// and inspect menus, so the board leaves them alone.
 	internal const string PadSouth = "Jump";

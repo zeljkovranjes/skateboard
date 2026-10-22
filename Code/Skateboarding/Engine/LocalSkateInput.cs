@@ -8,7 +8,8 @@ namespace Skateboarding.Engine;
 /// controls (DeviceInputMerge: neither device locks the other out). On keyboard the
 /// steering keys ramp the trucks in and out instead of jumping to full lock, and holding the flick button turns the
 /// mouse into the trick stick: pull down to crouch, flick up (or up and to a side) to pop. Like a thumbstick let go, the
-/// mouse stick springs back to centre when the mouse rests, unless it is held out at the windup. Holding Jump and releasing
+/// mouse stick springs back to centre when the mouse rests, unless it is held out at the windup. The trick keys (Q and 1 to
+/// 4) wind up while held and pop their own trick when let go (TrickButtons). Holding Jump and releasing
 /// it pops an ollie, with the flip keys held for a kickflip or heelflip. Holding push and brake together crouches for a
 /// hippy jump, and letting both go jumps. In the air, push or brake while grabbing leans into a front or back flip.
 /// </summary>
@@ -19,6 +20,7 @@ internal sealed class LocalSkateInput
 	private float _releaseX;
 	private readonly KeyRamp _steer = new( SteerIn, SteerOut );
 	private Vector2 _flick;
+	private readonly TrickButtons _trickKeys = new();
 	private float _rested;
 	private float _wound;
 
@@ -70,15 +72,16 @@ internal sealed class LocalSkateInput
 
 	/// <summary>
 	/// The keyboard and mouse alone, whatever device the engine counts as last. move is the movement keys' share of
-	/// the movement input (DeviceMerge.KeyboardMove).
+	/// the movement input (DeviceMerge.KeyboardMove). While not <paramref name="ready"/> (a trick still playing out on
+	/// the ground) the mouse stick lets go.
 	/// </summary>
-	internal SkateInput ReadKeys( bool goofy, float delta, Vector3 move )
+	internal SkateInput ReadKeys( bool goofy, float delta, Vector3 move, bool ready = true )
 	{
 		using var scope = Input.PlayerScope( Input.PlayerIndex.KeyboardAndMouse );
 		var steer = _steer.Step( move.y, delta );
 		_steerKey = move.y;
 		var (flickX, flickY) = Keys( delta );
-		if ( Flicking )
+		if ( Flicking && ready )
 		{
 			var moved = new Vector2( Input.MouseDelta.x, -Input.MouseDelta.y );
 			_flick += moved / FlickTravel;
@@ -93,7 +96,23 @@ internal sealed class LocalSkateInput
 			_flick = Vector2.Zero;
 			_wound = 0f;
 		}
+		if ( _trickKeys.Step( HeldTrick(), goofy, ready, delta ) is { } trick )
+		{
+			flickX = trick.X;
+			flickY = trick.Y;
+		}
 		return Board( steer, flickX, flickY, goofy, delta );
+	}
+
+	// The trick key held on a ride (the first, if several are), as its trick.
+	private static Core.TrickKind HeldTrick()
+	{
+		for ( var i = 0; i < TrickButtons.Tricks.Length; i++ )
+		{
+			if ( Systems.RideKeys.Held( i ) )
+				return TrickButtons.Tricks[ i ];
+		}
+		return Core.TrickKind.None;
 	}
 
 	// A thumbstick let go springs back to centre; a mouse cannot be let go, so its stick does that itself once the mouse

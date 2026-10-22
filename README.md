@@ -27,6 +27,7 @@ get on or pick the board up, fades after a few seconds and comes back whenever y
 | Ollie (hold to crouch, let go to pop) | Space |
 | Kickflip / heelflip (hold with Space) | Alt / X |
 | Flick tricks (hold, then move the mouse: pull down, flick up) | Right mouse |
+| Kickflip / shove-it / heelflip / varial flip / 360 flip (hold, let go to pop) | Q / 1 / 2 / 3 / 4 |
 | Catch a flip | Left mouse |
 | Powerslide (hold) / revert (tap) | Shift |
 | Pump | Ctrl |
@@ -80,6 +81,11 @@ board.
   and not while someone else has it.
 - **Powerslides.** Hold Shift (left trigger) at speed and the board turns across and scrubs to a stop in about two
   seconds from a fast push; tap it to revert.
+- **Trick keys.** Hold Q, 1, 2, 3 or 4 to wind up and let go to pop that trick; the longer you hold, the higher it
+  pops. While you ride, Q and the number keys are the board's (the spawn menu and the hotbar wait until you get off),
+  and the keys show in the bottom left corner.
+- **One trick at a time.** A trick plays out, landing and all, before the next can pop: whatever you press during a
+  landing waits for it to end.
 - **Brake smoke.** Brake hard at speed (S) and smoke kicks up off the heel of the shoe you drag: white off the shoe,
   greying as it drifts up and fades behind you, more the faster you go. It is drawn in code; the addon ships no
   texture for it.
