@@ -1,13 +1,13 @@
 namespace Skateboarding.Engine.Docs;
 
 /// <summary>
-/// The docs' GIFs: one short clip of each move, docs/gifs/&lt;id&gt;.gif in the addon's files, with what each one shows.
-/// A move whose GIF is not there yet shows a placeholder in its place.
+/// The docs' clips (animated WebP): one short clip of each move, docs/clips/&lt;id&gt;.webp in the addon's files, with
+/// what each one shows. A move whose clip is not there yet shows a placeholder in its place.
 /// </summary>
 internal static class DocsGifs
 {
-	/// <summary>Where the GIFs are, among the addon's files.</summary>
-	internal const string Folder = "docs/gifs";
+	/// <summary>Where the clips are, among the addon's files.</summary>
+	internal const string Folder = "docs/clips";
 
 	/// <summary>Every clip the docs show, and what it is to show.</summary>
 	internal static readonly (string Id, string Shows)[] All =
@@ -24,6 +24,8 @@ internal static class DocsGifs
 		("hippy-jump", "Jump straight up off the rolling board and land back on it"),
 		("ollie", "Ollie on flat ground at speed, side view"),
 		("nollie", "Nollie (popped off the nose) on flat ground, side view"),
+		("plant", "Boneless: front hand (R) held on the ground, then push (W): foot planted, spring up"),
+		("fastplant", "Fastplant: back hand (F) held on the ground, then push (W): foot planted, spring up"),
 		("kickflip", "Kickflip on flat ground, side view, catch and land"),
 		("heelflip", "Heelflip on flat ground, side view"),
 		("shuvit", "Pop shove-it (backside) on flat ground"),
@@ -74,6 +76,6 @@ internal static class DocsGifs
 		("runout", "Ride side-on into a curb and run it out on foot"),
 	};
 
-	/// <summary>The GIF's path among the addon's files.</summary>
-	internal static string Path( string id ) => $"{Folder}/{id}.gif";
+	/// <summary>The clip's path among the addon's files.</summary>
+	internal static string Path( string id ) => $"{Folder}/{id}.webp";
 }
