@@ -93,7 +93,11 @@ internal static class SkateBindings
 		.ToArray();
 
 	private static Dictionary<string, string> _keys;
+	// The simulated keys and buttons as this frame began and as the last one did: a script's change shows from the next
+	// frame on, whenever in a frame it is made, as a real key's does.
+	private static readonly HashSet<string> _simulatedNow = new( StringComparer.OrdinalIgnoreCase );
 	private static readonly HashSet<string> _simulatedBefore = new( StringComparer.OrdinalIgnoreCase );
+	private static readonly HashSet<string> _simulatedPadNow = new( StringComparer.OrdinalIgnoreCase );
 	private static readonly HashSet<string> _simulatedPadBefore = new( StringComparer.OrdinalIgnoreCase );
 
 	/// <summary>Every control, in the order the docs list them (grouped).</summary>
@@ -158,7 +162,7 @@ internal static class SkateBindings
 	/// <summary>True while the controller holds the button the game action reads (or a script does).</summary>
 	internal static bool PadActionDown( string action )
 	{
-		if ( SimulatedPad.Contains( action ) )
+		if ( _simulatedPadNow.Contains( action ) )
 			return true;
 		using var scope = Input.PlayerScope( Input.PlayerIndex.Controller1 );
 		return Input.Down( action, false );
@@ -167,7 +171,7 @@ internal static class SkateBindings
 	/// <summary>True the frame the controller's button for the game action goes down (or a script's does).</summary>
 	internal static bool PadActionPressed( string action )
 	{
-		if ( SimulatedPad.Contains( action ) && !_simulatedPadBefore.Contains( action ) )
+		if ( _simulatedPadNow.Contains( action ) && !_simulatedPadBefore.Contains( action ) )
 			return true;
 		using var scope = Input.PlayerScope( Input.PlayerIndex.Controller1 );
 		return Input.Pressed( action );
@@ -223,7 +227,7 @@ internal static class SkateBindings
 	/// of the left mouse button too, so listen from the frame after it.
 	/// </summary>
 	internal static string CaptureKey() =>
-		Capturable.FirstOrDefault( key => CanBind( key ) && (Input.Keyboard.Pressed( key ) || Simulated.Contains( key ) && !_simulatedBefore.Contains( key )) );
+		Capturable.FirstOrDefault( key => CanBind( key ) && (Input.Keyboard.Pressed( key ) || _simulatedNow.Contains( key ) && !_simulatedBefore.Contains( key )) );
 
 	/// <summary>The control's key as a person reads it: "Space", "Left mouse", "F1", "Q".</summary>
 	internal static string KeyLabel( string id ) => Label( KeyOf( id ) );
@@ -255,9 +259,18 @@ internal static class SkateBindings
 	internal static void EndFrame()
 	{
 		_simulatedBefore.Clear();
-		_simulatedBefore.UnionWith( Simulated );
+		_simulatedBefore.UnionWith( _simulatedNow );
 		_simulatedPadBefore.Clear();
-		_simulatedPadBefore.UnionWith( SimulatedPad );
+		_simulatedPadBefore.UnionWith( _simulatedPadNow );
+	}
+
+	/// <summary>Takes this frame's view of the simulated keys and buttons; RideKeys calls it as each frame begins.</summary>
+	internal static void BeginFrame()
+	{
+		_simulatedNow.Clear();
+		_simulatedNow.UnionWith( Simulated );
+		_simulatedPadNow.Clear();
+		_simulatedPadNow.UnionWith( SimulatedPad );
 	}
 
 	/// <summary>The game action that reads the control's controller button, or null.</summary>
@@ -269,13 +282,13 @@ internal static class SkateBindings
 		(!Blocked || id == "docs") && (ScopeOf( id ) != Scope.Board || Systems.RideKeys.WithBoard);
 
 	private static bool KeyDown( string key ) =>
-		!string.IsNullOrEmpty( key ) && (Input.Keyboard.Down( key ) || Simulated.Contains( key ));
+		!string.IsNullOrEmpty( key ) && (Input.Keyboard.Down( key ) || _simulatedNow.Contains( key ));
 
 	private static bool KeyPressed( string key ) =>
-		!string.IsNullOrEmpty( key ) && (Input.Keyboard.Pressed( key ) || Simulated.Contains( key ) && !_simulatedBefore.Contains( key ));
+		!string.IsNullOrEmpty( key ) && (Input.Keyboard.Pressed( key ) || _simulatedNow.Contains( key ) && !_simulatedBefore.Contains( key ));
 
 	private static bool KeyReleased( string key ) =>
-		!string.IsNullOrEmpty( key ) && (Input.Keyboard.Released( key ) || !Simulated.Contains( key ) && _simulatedBefore.Contains( key ));
+		!string.IsNullOrEmpty( key ) && (Input.Keyboard.Released( key ) || !_simulatedNow.Contains( key ) && _simulatedBefore.Contains( key ));
 
 	private static Scope ScopeOf( string id ) => Table.FirstOrDefault( row => row.Binding.Id == id ).Scope;
 

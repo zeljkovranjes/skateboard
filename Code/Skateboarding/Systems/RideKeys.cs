@@ -52,6 +52,7 @@ public sealed class RideKeys : GameObjectSystem<RideKeys>
 	{
 		if ( Scene.IsEditor )
 			return;
+		SkateBindings.BeginFrame();
 		PadBail = false;
 		var carrying = !Riding && Scene.GetAllComponents<Components.SkateRider>()
 			.Any( rider => !rider.IsProxy && rider.Mode == SkateRiderMode.Carrying );
