@@ -14,7 +14,8 @@ namespace Skateboarding.Engine.BoardEditing;
 /// The community portraits on the underside grow under the mouse; a click on one pops it out, outlines it and pushes the
 /// board aside to the left, and then who it is comes in from the right (Esc or a click off it lets it go: the words go
 /// out to the right, then the board comes back to the middle). Its modes, Inspect and Edit, stand along the top
-/// (<see cref="BoardEditorModes"/>); it opens in Inspect.
+/// (<see cref="BoardEditorModes"/>); it opens in Inspect. Edit pushes the board aside as a pick does, and the board's
+/// settings come in from the right (<see cref="BoardEditorEdit"/>); Esc or Done goes back to Inspect.
 /// </summary>
 internal sealed class BoardEditor : Panel
 {
@@ -69,19 +70,22 @@ internal sealed class BoardEditor : Panel
 	private float _shownPitch;
 	private float _shownZoom = 1f;
 	private Vector2 _shownShift;
-	// The portrait card and the modes along the top, and where and when the left button went down (a press let go where
-	// it went down, quickly, is a click; one that moved is a drag), and whether it went down on the card or the modes.
+	// The portrait card, the board's settings and the modes along the top, and where and when the left button went down
+	// (a press let go where it went down, quickly, is a click; one that moved is a drag), and whether it went down on any
+	// of them.
 	private BoardEditorCard _card;
+	private BoardEditorEdit _edit;
 	private BoardEditorModes _modes;
 	private Vector2 _pressedAt;
 	private RealTimeSince _sincePressed;
 	private bool _pressedOnCard;
 	// How far the board is pushed aside (0 in the middle, 1 aside), eased from where it was to where it is going; and the
-	// person whose card comes in once the board is on its way.
+	// person whose card, or the settings, come in once the board is on its way.
 	private float _asideFrom;
 	private float _asideTo;
 	private RealTimeSince _sinceAside;
 	private PortraitInfo _coming;
+	private bool _editComing;
 	private RealTimeSince _sinceComing;
 
 	/// <summary>The look the panel was made with (<see cref="BoardEditorStyles.Version"/>; 0 for one made before it was kept).</summary>
@@ -95,11 +99,17 @@ internal sealed class BoardEditor : Panel
 		var view = AddChild<ScenePanel>( "view" );
 		_stage = new BoardEditorStage( view.RenderScene );
 		_card = AddChild<Panel>( "card-slot" ).AddChild<BoardEditorCard>( "card" );
+		_edit = AddChild<Panel>( "edit-slot" ).AddChild<BoardEditorEdit>( "edit" );
+		_edit.Done = () => _modes?.Select( BoardEditorModes.Inspect );
 		_modes = AddChild<BoardEditorModes>( "modes" );
+		_modes.Changed = ModeChanged;
 	}
 
 	/// <summary>The modes along the top.</summary>
 	internal BoardEditorModes Modes => _modes;
+
+	// True while the board's settings are in use (Edit along the top).
+	private bool Editing => _modes?.Selected == BoardEditorModes.Edit;
 
 	// The card, in its slot on the right; made on first use as well, and moved into the slot, for an editor made before a
 	// reload changed them.
@@ -128,8 +138,10 @@ internal sealed class BoardEditor : Panel
 		_shownZoom = _zoom;
 		_shownShift = _shift;
 		_coming = null;
+		_editComing = false;
 		_asideFrom = _asideTo = 0f;
-		_modes?.Select( 0 );
+		_modes?.Select( BoardEditorModes.Inspect, false );
+		_edit?.Hide();
 		ShowBoard();
 		_hidden.Hide( scene, hide );
 		SetClass( "open", true );
@@ -149,8 +161,11 @@ internal sealed class BoardEditor : Panel
 		_turning = false;
 		_moving = false;
 		_coming = null;
+		_editComing = false;
 		_asideFrom = _asideTo = 0f;
 		Card.Hide();
+		_edit?.Hide();
+		_modes?.Select( BoardEditorModes.Inspect, false );
 		_stage.Portraits.Choose( -1 );
 		SetClass( "pointing", false );
 		SkateBindings.Blocked = false;
@@ -226,7 +241,7 @@ internal sealed class BoardEditor : Panel
 	protected override void OnMouseDown( MousePanelEvent e )
 	{
 		base.OnMouseDown( e );
-		_pressedOnCard = Within( e.Target, _card ) || Within( e.Target, _modes );
+		_pressedOnCard = Within( e.Target, _card ) || Within( e.Target, _edit ) || Within( e.Target, _modes );
 		if ( _pressedOnCard )
 			return;
 		if ( e.MouseButton == MouseButtons.Left )
@@ -265,9 +280,14 @@ internal sealed class BoardEditor : Panel
 		_zoom = Math.Clamp( _zoom * MathF.Exp( value.y * ZoomPerNotch ), NearestZoom, FurthestZoom );
 	}
 
-	// Esc: lets a picked portrait go if there is one, or else closes the editor.
+	// Esc: back to Inspect from Edit, or lets a picked portrait go if there is one, or else closes the editor.
 	private void Back()
 	{
+		if ( Editing )
+		{
+			_modes.Select( BoardEditorModes.Inspect );
+			return;
+		}
 		if ( Card.Showing || _coming is not null )
 		{
 			_stage.Portraits.Choose( -1 );
@@ -277,8 +297,32 @@ internal sealed class BoardEditor : Panel
 		Close();
 	}
 
-	// A click on the board: picks the portrait under the mouse and shows who it is, or lets the picked one go.
-	private void Click() => Pick( _stage.Portraits.Pick( MouseRay() ) );
+	// A click on the board: picks the portrait under the mouse and shows who it is, or lets the picked one go (in Inspect;
+	// in Edit the portraits are left alone).
+	private void Click()
+	{
+		if ( !Editing )
+			Pick( _stage.Portraits.Pick( MouseRay() ) );
+	}
+
+	// A mode put in use along the top. Edit lets a picked portrait go and pushes the board aside, as a pick does, and then
+	// the board's settings come in; Inspect sends them out to the right and brings the board back to the middle.
+	private void ModeChanged( int mode )
+	{
+		if ( mode == BoardEditorModes.Edit )
+		{
+			_stage.Portraits.Choose( -1 );
+			_coming = null;
+			Card.Hide();
+			_editComing = true;
+			_sinceComing = 0f;
+			Aside( 1f, 0f );
+			return;
+		}
+		_editComing = false;
+		_edit?.Hide();
+		Aside( 0f, BackAfter );
+	}
 
 	/// <summary>
 	/// Picks a portrait (by its place among them; -1 for none): the board is pushed aside and then who it is comes in, or,
@@ -339,7 +383,7 @@ internal sealed class BoardEditor : Panel
 	// The portrait under the mouse grows, and the cursor becomes a hand over it; none while the board is dragged.
 	private void Hover()
 	{
-		var tile = _turning || _moving ? -1 : _stage.Portraits.Pick( MouseRay() );
+		var tile = _turning || _moving || Editing ? -1 : _stage.Portraits.Pick( MouseRay() );
 		_stage.Portraits.Hover( tile );
 		SetClass( "pointing", tile >= 0 );
 	}
@@ -417,11 +461,16 @@ internal sealed class BoardEditor : Panel
 		_shownPitch += (_pitch - _shownPitch) * step;
 		_shownZoom += (_zoom - _shownZoom) * step;
 		_shownShift += (_shift - _shownShift) * step;
-		// Who was picked comes in once the board is on its way aside.
+		// Who was picked, or the board's settings, come in once the board is on its way aside.
 		if ( _coming is not null && _sinceComing >= CardAfter )
 		{
 			Card.Show( _coming );
 			_coming = null;
+		}
+		if ( _editComing && _sinceComing >= CardAfter )
+		{
+			_edit?.Show();
+			_editComing = false;
 		}
 		ShowBoard();
 		_stage.Portraits.Animate( RealTime.Delta );

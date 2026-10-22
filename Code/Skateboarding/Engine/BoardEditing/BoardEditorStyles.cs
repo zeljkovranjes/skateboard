@@ -7,7 +7,9 @@ namespace Skateboarding.Engine.BoardEditing;
 /// capital labels, all in white and greys with a soft shadow under the letters and no accent colour. It comes in from the
 /// right, each part a beat after the one before, and goes out the same way. The modes stand along the top in the middle,
 /// words alone in the same type: the one in use white over a thin underline that grows out from its middle, the other
-/// grey, lighter under the mouse.
+/// grey, lighter under the mouse. The board's settings (Edit) take the same place and come in the same way, in the same
+/// type: words to pick underlined like the modes, round swatches ringed in white when picked, a thin line with a round
+/// knob for the speed.
 /// </summary>
 internal static class BoardEditorStyles
 {
@@ -15,7 +17,7 @@ internal static class BoardEditorStyles
 	/// Raised whenever the look or the layout changes: an editor panel made before is made again as it next opens (a
 	/// panel parses its styles once, as it is made).
 	/// </summary>
-	internal const int Version = 5;
+	internal const int Version = 7;
 
 	internal const string Sheet = """
 		BoardEditor
@@ -98,7 +100,7 @@ internal static class BoardEditorStyles
 		{
 			width: 100%;
 		}
-		BoardEditor .card-slot
+		BoardEditor .card-slot, BoardEditor .edit-slot
 		{
 			position: absolute;
 			top: 0;
@@ -260,6 +262,199 @@ internal static class BoardEditorStyles
 			font-size: 18px;
 			font-weight: 600;
 			color: rgba( 255, 255, 255, 0.72 );
+		}
+		BoardEditor .edit
+		{
+			flex-direction: column;
+			max-width: 560px;
+			color: white;
+			opacity: 0;
+			transform: translateX( 140px );
+			transition: opacity 0.35s ease-out, transform 0.6s ease-out;
+			pointer-events: none;
+		}
+		BoardEditor .edit.shown
+		{
+			opacity: 1;
+			transform: translateX( 0px );
+			pointer-events: all;
+		}
+		BoardEditor .edit label
+		{
+			text-shadow: 0px 2px 18px rgba( 0, 0, 0, 0.6 );
+		}
+		BoardEditor .edit > .head, BoardEditor .edit > .section, BoardEditor .edit > .actions
+		{
+			opacity: 0;
+			transform: translateX( 70px );
+			transition: opacity 0.4s ease-out, transform 0.6s ease-out;
+		}
+		BoardEditor .edit.shown > .head, BoardEditor .edit.shown > .section, BoardEditor .edit.shown > .actions
+		{
+			opacity: 1;
+			transform: translateX( 0px );
+		}
+		BoardEditor .edit.shown > .beat1 { transition-delay: 0.04s; }
+		BoardEditor .edit.shown > .beat2 { transition-delay: 0.08s; }
+		BoardEditor .edit.shown > .beat3 { transition-delay: 0.12s; }
+		BoardEditor .edit.shown > .beat4 { transition-delay: 0.16s; }
+		BoardEditor .edit.shown > .beat5 { transition-delay: 0.2s; }
+		BoardEditor .edit.shown > .beat6 { transition-delay: 0.24s; }
+		BoardEditor .edit.shown > .beat7 { transition-delay: 0.28s; }
+		BoardEditor .edit .head
+		{
+			flex-direction: column;
+		}
+		BoardEditor .edit .title
+		{
+			font-size: 48px;
+			font-weight: 800;
+			letter-spacing: -1px;
+			color: white;
+		}
+		BoardEditor .edit .subtitle
+		{
+			font-size: 18px;
+			color: rgba( 255, 255, 255, 0.5 );
+		}
+		BoardEditor .edit .section
+		{
+			flex-direction: column;
+			margin-top: 24px;
+		}
+		BoardEditor .edit .top
+		{
+			flex-direction: row;
+			align-items: center;
+			margin-bottom: 10px;
+		}
+		BoardEditor .edit .heading
+		{
+			font-size: 12px;
+			font-weight: 600;
+			letter-spacing: 1.4px;
+			text-transform: uppercase;
+			color: rgba( 255, 255, 255, 0.45 );
+		}
+		BoardEditor .edit .value
+		{
+			margin-left: 12px;
+			font-size: 14px;
+			color: rgba( 255, 255, 255, 0.72 );
+		}
+		BoardEditor .edit .choices, BoardEditor .edit .actions
+		{
+			flex-direction: row;
+		}
+		BoardEditor .edit .choice, BoardEditor .edit .action
+		{
+			flex-direction: column;
+			align-items: center;
+			margin-right: 26px;
+			color: rgba( 255, 255, 255, 0.45 );
+			cursor: pointer;
+			transition: color 0.2s ease-out;
+		}
+		BoardEditor .edit .choice:hover, BoardEditor .edit .action:hover
+		{
+			color: rgba( 255, 255, 255, 0.75 );
+		}
+		BoardEditor .edit .choice.picked, BoardEditor .edit .action.main
+		{
+			color: white;
+		}
+		BoardEditor .edit .choice-name, BoardEditor .edit .action-name
+		{
+			font-size: 19px;
+			font-weight: 600;
+		}
+		BoardEditor .edit .underline
+		{
+			margin-top: 6px;
+			width: 0%;
+			height: 2px;
+			border-radius: 1px;
+			background-color: white;
+			transition: width 0.3s ease-out;
+		}
+		BoardEditor .edit .choice.picked .underline, BoardEditor .edit .action.main .underline,
+		BoardEditor .edit .action:hover .underline
+		{
+			width: 100%;
+		}
+		BoardEditor .edit .actions
+		{
+			margin-top: 34px;
+		}
+		BoardEditor .edit .swatches
+		{
+			flex-direction: row;
+			flex-wrap: wrap;
+		}
+		BoardEditor .edit .swatch
+		{
+			width: 36px;
+			height: 36px;
+			margin-right: 8px;
+			padding: 4px;
+			border-radius: 18px;
+			border: 2px solid rgba( 255, 255, 255, 0 );
+			cursor: pointer;
+			transition: transform 0.2s ease-out;
+		}
+		BoardEditor .edit .swatch:hover
+		{
+			transform: scale( 1.1 );
+		}
+		BoardEditor .edit .swatch.picked
+		{
+			border: 2px solid white;
+		}
+		BoardEditor .edit .dot
+		{
+			flex-grow: 1;
+			border-radius: 14px;
+			box-shadow: 0px 2px 10px rgba( 0, 0, 0, 0.35 );
+		}
+		BoardEditor .edit .slider
+		{
+			position: relative;
+			width: 260px;
+			height: 24px;
+			cursor: pointer;
+		}
+		BoardEditor .edit .rail, BoardEditor .edit .fill
+		{
+			position: absolute;
+			left: 0;
+			top: 11px;
+			height: 2px;
+			border-radius: 1px;
+		}
+		BoardEditor .edit .rail
+		{
+			right: 0;
+			background-color: rgba( 255, 255, 255, 0.22 );
+		}
+		BoardEditor .edit .fill
+		{
+			background-color: white;
+		}
+		BoardEditor .edit .knob
+		{
+			position: absolute;
+			top: 5px;
+			width: 14px;
+			height: 14px;
+			margin-left: -7px;
+			border-radius: 7px;
+			background-color: white;
+			box-shadow: 0px 2px 8px rgba( 0, 0, 0, 0.4 );
+			transition: transform 0.15s ease-out;
+		}
+		BoardEditor .edit .slider:hover .knob
+		{
+			transform: scale( 1.2 );
 		}
 		""";
 }
