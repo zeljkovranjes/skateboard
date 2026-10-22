@@ -40,8 +40,6 @@ internal sealed class BoardEditor : Panel
 
 	private readonly BoardEditorStage _stage;
 	private readonly BoardEditorHide _hidden = new();
-	private readonly Label _keys;
-	private readonly Label _pad;
 	private bool _justOpened;
 	private bool _turning;
 	private bool _moving;
@@ -62,10 +60,6 @@ internal sealed class BoardEditor : Panel
 		AcceptsFocus = true;
 		var view = AddChild<ScenePanel>( "view" );
 		_stage = new BoardEditorStage( view.RenderScene );
-		AddChild<Label>( "title" ).Text = "Board";
-		var bar = AddChild<Panel>( "bar" );
-		_keys = bar.AddChild<Label>( "hint" );
-		_pad = bar.AddChild<Label>( "hint" );
 	}
 
 	/// <summary>
@@ -82,9 +76,6 @@ internal sealed class BoardEditor : Panel
 		_shownShift = _shift;
 		ShowBoard();
 		_hidden.Hide( scene, hide );
-		_keys.Text = $"Drag to turn  ·  Right-drag to move  ·  Scroll to zoom  ·  Double-click to reset  ·  " +
-			$"{SkateBindings.KeyLabel( "board-editor" )} or Esc to close";
-		_pad.Text = "Controller: right stick to turn  ·  LT and RT to zoom  ·  B to close";
 		SetClass( "open", true );
 		IsOpen = true;
 		_justOpened = true;
@@ -219,12 +210,11 @@ internal sealed class BoardEditor : Panel
 		_zoom = Math.Clamp( _zoom * MathF.Exp( zoom * TriggerZoom * delta ), NearestZoom, FurthestZoom );
 	}
 
-	// A drag under way: turning with the left button, moving with the right or middle one. A button let go anywhere,
-	// on the editor or off it, ends its drag.
+	// A drag under way: turning with the left button, moving with the right or middle one, from the press on the editor
+	// to its release (OnMouseUp). The buttons are read from the editor's own mouse events, not the game's input: the
+	// editor takes the mouse while it is open, so the game sees no button held at all.
 	private void Drag()
 	{
-		_turning &= Input.Keyboard.Down( "mouse1" );
-		_moving &= Input.Keyboard.Down( "mouse2" ) || Input.Keyboard.Down( "mouse3" );
 		var now = Mouse.Position;
 		var moved = now - _mouse;
 		_mouse = now;
