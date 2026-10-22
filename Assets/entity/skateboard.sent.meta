@@ -1,3 +1,26 @@
 {
-  "guid": "24671311-36d2-453e-8df6-8b7a2702323a"
+  "guid": "24671311-36d2-453e-8df6-8b7a2702323a",
+  "publish": {
+    "Enabled": true,
+    "ProjectConfig": {
+      "Title": "Heartbeat Skateboard",
+      "Type": "sent",
+      "Org": "notpointless",
+      "Ident": "chomnr_heartbeat_skateboard",
+      "Schema": 0,
+      "IncludeSourceFiles": false,
+      "Resources": null,
+      "PackageReferences": null,
+      "EditorReferences": null,
+      "Mounts": null,
+      "IsStandaloneOnly": false,
+      "AI": {
+        "EnableMcpCommunication": true
+      },
+      "Metadata": {
+        "SingleAssetSource": "entity/skateboard.sent",
+        "ParentPackage": "facepunch.sandbox"
+      }
+    }
+  }
 }

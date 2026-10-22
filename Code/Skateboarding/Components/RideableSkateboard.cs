@@ -192,7 +192,7 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		if ( (!Networking.IsActive || Networking.IsHost) && OwnerId == Guid.Empty && GameObject.Network.Owner is { } spawner )
 			Claim( spawner );
 		// The rider's clips are read once per scene, a moment's work: done as the board appears, not as someone gets on.
-		Scene.GetSystem<RiderAnimationLibrary>()?.Get( AnimationClips, AnimationGraph );
+		SceneSystems.Get<RiderAnimationLibrary>( Scene )?.Get( AnimationClips, AnimationGraph );
 	}
 
 	bool IPressable.CanPress( IPressable.Event e ) => RiderConnection == Guid.Empty && PlayerOf( e ).IsValid();
