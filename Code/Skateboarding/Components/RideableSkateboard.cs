@@ -167,6 +167,15 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 	private Transform[] _givenBackFrom;
 	private SkinnedModelRenderer _givenBackBody;
 	private TimeSince _givenBackSince;
+	// Where the body was first drawn given back, and whether it has been yet: the pose eased from goes on across the ground
+	// as the body does from there. Left where it was, a body given back walking or running left it behind and was dragged
+	// back to it a step a frame; taken along up and down as well, the body's settling from where it is put (GetOffLift)
+	// dropped it 3 in.
+	private Vector3 _givenBackStart;
+	private bool _givenBackInBody;
+	// How the rider was walking (inches per second, across the ground) as it was last shown, for the player given back on
+	// foot to go on at.
+	private Vector3 _riderMoving;
 
 	protected override void OnStart()
 	{
@@ -392,6 +401,7 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		for ( var bone = 0; bone < _riderShown.Length; bone++ )
 			_riderShown[ bone ] = scene.GetBoneWorldTransform( bone );
 		_riderShownValid = true;
+		_riderMoving = rider.Mode is SkateRiderMode.Walking or SkateRiderMode.Carrying ? rider.Walker.Velocity.WithZ( 0f ) : Vector3.Zero;
 	}
 
 	// Every client, as the player is given back: its body starts in the rider's last pose, where the rider was, and eases
@@ -406,6 +416,7 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 			System.Array.Copy( _riderShown, _givenBackFrom, _riderShown.Length );
 			_givenBackBody = body;
 			_givenBackSince = 0f;
+			_givenBackInBody = false;
 		}
 		_riderShownValid = false;
 	}
@@ -438,9 +449,15 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		// was shown 6-8 in off for a frame and dipped 3 in.
 		var drawn = body.WorldTransform;
 		var animated = scene.Transform;
+		if ( !_givenBackInBody )
+		{
+			_givenBackStart = drawn.Position;
+			_givenBackInBody = true;
+		}
+		var along = (drawn.Position - _givenBackStart).WithZ( 0f );
 		for ( var bone = 0; bone < _givenBackFrom.Length; bone++ )
 		{
-			var from = drawn.ToLocal( _givenBackFrom[ bone ] );
+			var from = drawn.ToLocal( _givenBackFrom[ bone ].WithPosition( _givenBackFrom[ bone ].Position + along ) );
 			// Its own pose as its animation last gave it (the first frame, before it has given one, the rider's).
 			var to = fade > 0f && body.TryGetBoneTransformAnimation( bones[ bone ], out var own ) ? animated.ToLocal( own ) : from;
 			scene.SetBoneOverride( bone, new Transform( Vector3.Lerp( from.Position, to.Position, fade ),
@@ -793,13 +810,16 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		var player = _stowedPlayer;
 		Unstow();
 		GiveBodyBack( player );
-		// It comes back standing: switched off it kept the speed it had as it got on, and walked on with it.
+		// It comes back walking as the rider walked: switched off it kept the speed it had as it got on, and walked on with
+		// that, and stopped dead it showed a walking rider halting in a frame (the body and the view both stopping, then
+		// setting off again as the keys still held walked it on).
 		if ( givenBack is not null )
 		{
 			if ( givenBack.Body.IsValid() )
-				givenBack.Body.Velocity = Vector3.Zero;
-			givenBack.WishVelocity = Vector3.Zero;
+				givenBack.Body.Velocity = _riderMoving;
+			givenBack.WishVelocity = _riderMoving;
 		}
+		_riderMoving = Vector3.Zero;
 		_mine = false;
 	}
 

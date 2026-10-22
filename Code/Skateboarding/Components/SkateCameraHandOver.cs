@@ -33,6 +33,12 @@ public sealed class SkateCameraHandOver : Component, ICameraModifier
 	private Transform _shown;
 	private float _shownFov;
 	private bool _handingBack;
+	// Where the view starts each hand-over, as an offset from where it is going (the follow view taking over, the game's
+	// own handing back), taken on its first frame and shrinking to nothing: the view starts where it was and goes on with
+	// what it eases to. Eased from a place fixed in the world, it stood still for a frame and then caught up as the player
+	// got on or was given back walking or running.
+	private Vector3 _startOffset;
+	private bool _startTaken;
 	private List<string> _hidden;
 	private TimeSince _since;
 	private TimeSince _sinceTarget;
@@ -50,6 +56,7 @@ public sealed class SkateCameraHandOver : Component, ICameraModifier
 		_shown = _from;
 		_shownFov = _fromFov;
 		_handingBack = false;
+		_startTaken = false;
 		_since = 0f;
 		_sinceTarget = 0f;
 		// Getting straight back on, the view is still easing back: this one eases on from where that left it (the game's
@@ -68,6 +75,7 @@ public sealed class SkateCameraHandOver : Component, ICameraModifier
 		if ( _handingBack )
 			return;
 		_handingBack = true;
+		_startTaken = false;
 		_since = 0f;
 		if ( Components.Get<SkateCamera>() is { } follow )
 			follow.Enabled = false;
@@ -107,14 +115,26 @@ public sealed class SkateCameraHandOver : Component, ICameraModifier
 			// The game's camera has placed itself by now (the player's eyes, or its boom behind them): the view eases there
 			// from where the skate camera left it.
 			var eye = view.Position;
-			view.Position = Vector3.Lerp( _shown.Position, view.Position, weight );
+			if ( !_startTaken )
+			{
+				_startOffset = _shown.Position - eye;
+				_startTaken = true;
+			}
+			view.Position = eye + _startOffset * (1f - weight);
 			view.Rotation = Rotation.Slerp( _shown.Rotation, view.Rotation, weight );
 			view.FieldOfView = MathX.Lerp( _shownFov, view.FieldOfView, weight );
 			ShowEyes( camera, view.Position.Distance( eye ) <= EyeNear || weight >= 1f );
 		}
 		else
 		{
-			view.Position = Vector3.Lerp( _from.Position, _follow.WorldPosition, weight );
+			// Taking over, the start goes on with the rider as it is shown (the follow view may not have placed itself yet).
+			var anchor = Followed();
+			if ( !_startTaken )
+			{
+				_startOffset = _from.Position - anchor;
+				_startTaken = true;
+			}
+			view.Position = Vector3.Lerp( anchor + _startOffset, _follow.WorldPosition, weight );
 			view.Rotation = Rotation.Slerp( _from.Rotation, _follow.WorldRotation, weight );
 			view.FieldOfView = MathX.Lerp( _fromFov, _follow.FieldOfView, weight );
 			_shown = new Transform( view.Position, view.Rotation );
@@ -164,6 +184,16 @@ public sealed class SkateCameraHandOver : Component, ICameraModifier
 
 	// Gone mid-way (got straight back on, the scene unloaded), the first-person models are not left hidden.
 	protected override void OnDestroy() => RestoreEyes( _game );
+
+	// Where the followed rider is shown (the followed object's place, without a rider).
+	private Vector3 Followed()
+	{
+		var target = Components.Get<SkateCamera>()?.Target;
+		if ( !target.IsValid() )
+			return _follow.WorldPosition;
+		var rider = target.Components.Get<SkateRider>();
+		return rider.IsValid() ? rider.ShownTransform.Position : target.WorldPosition;
+	}
 
 	private static float Smoothstep( float t )
 	{
