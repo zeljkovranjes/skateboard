@@ -24,6 +24,7 @@ internal static class DocsGifs
 		("hippy-jump", "Jump straight up off the rolling board and land back on it"),
 		("ollie", "Ollie on flat ground at speed, side view"),
 		("nollie", "Nollie (popped off the nose) on flat ground, side view"),
+		("no-comply", "No comply: from a coast, push (W), then Space within a third of a second: front foot off, pop"),
 		("plant", "Boneless: front hand (R) held on the ground, then push (W): foot planted, spring up"),
 		("fastplant", "Fastplant: back hand (F) held on the ground, then push (W): foot planted, spring up"),
 		("kickflip", "Kickflip on flat ground, side view, catch and land"),

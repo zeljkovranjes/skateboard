@@ -194,7 +194,8 @@ internal sealed class SkateControlsCard : Panel
 		}
 		_shownFor -= Time.Delta;
 		_still = speed < StillSpeed ? _still + Time.Delta : 0f;
-		SetClass( "visible", _card != Card.None && (_shownFor > 0f || _still > StillShow) );
+		// Out of the way while the docs are open over the game; back as they close.
+		SetClass( "visible", _card != Card.None && !Docs.SkateDocs.IsOpen && (_shownFor > 0f || _still > StillShow) );
 	}
 
 	private void Build()
