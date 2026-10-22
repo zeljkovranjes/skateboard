@@ -5,7 +5,9 @@ namespace Skateboarding.Engine.BoardEditing;
 /// pulls at the eye or flickers, and the board alone, sharp, in the middle. Who a picked portrait shows stands in the
 /// right half, centred top to bottom, as words alone with nothing behind them: a large name, figures set large over small
 /// capital labels, all in white and greys with a soft shadow under the letters and no accent colour. It comes in from the
-/// right, each part a beat after the one before, and goes out the same way.
+/// right, each part a beat after the one before, and goes out the same way. The modes stand along the top in the middle,
+/// words alone in the same type: the one in use white over a thin underline that grows out from its middle, the other
+/// grey, lighter under the mouse.
 /// </summary>
 internal static class BoardEditorStyles
 {
@@ -13,7 +15,7 @@ internal static class BoardEditorStyles
 	/// Raised whenever the look or the layout changes: an editor panel made before is made again as it next opens (a
 	/// panel parses its styles once, as it is made).
 	/// </summary>
-	internal const int Version = 4;
+	internal const int Version = 5;
 
 	internal const string Sheet = """
 		BoardEditor
@@ -46,6 +48,55 @@ internal static class BoardEditorStyles
 			right: 0;
 			bottom: 0;
 			pointer-events: none;
+		}
+		BoardEditor .modes
+		{
+			position: absolute;
+			top: 30px;
+			left: 0;
+			right: 0;
+			flex-direction: row;
+			justify-content: center;
+			pointer-events: none;
+		}
+		BoardEditor .mode
+		{
+			flex-direction: column;
+			align-items: center;
+			margin: 0px 20px;
+			padding: 6px 2px;
+			color: rgba( 255, 255, 255, 0.45 );
+			cursor: pointer;
+			pointer-events: all;
+			transition: color 0.2s ease-out;
+		}
+		BoardEditor .mode:hover
+		{
+			color: rgba( 255, 255, 255, 0.75 );
+		}
+		BoardEditor .mode.active
+		{
+			color: white;
+		}
+		BoardEditor .mode-name
+		{
+			font-size: 20px;
+			font-weight: 600;
+			letter-spacing: 0.2px;
+			text-shadow: 0px 2px 14px rgba( 0, 0, 0, 0.6 );
+		}
+		BoardEditor .mode .underline
+		{
+			margin-top: 7px;
+			width: 0%;
+			height: 2px;
+			border-radius: 1px;
+			background-color: white;
+			transition: width 0.3s ease-out;
+		}
+		BoardEditor .mode.active .underline
+		{
+			width: 100%;
 		}
 		BoardEditor .card-slot
 		{

@@ -13,7 +13,8 @@ namespace Skateboarding.Engine.BoardEditing;
 /// Everything eases to where it is asked to go, so nothing jumps. The editor key, Esc, or B on a controller closes it.
 /// The community portraits on the underside grow under the mouse; a click on one pops it out, outlines it and pushes the
 /// board aside to the left, and then who it is comes in from the right (Esc or a click off it lets it go: the words go
-/// out to the right, then the board comes back to the middle).
+/// out to the right, then the board comes back to the middle). Its modes, Inspect and Edit, stand along the top
+/// (<see cref="BoardEditorModes"/>); it opens in Inspect.
 /// </summary>
 internal sealed class BoardEditor : Panel
 {
@@ -68,9 +69,10 @@ internal sealed class BoardEditor : Panel
 	private float _shownPitch;
 	private float _shownZoom = 1f;
 	private Vector2 _shownShift;
-	// The portrait card, and where and when the left button went down (a press let go where it went down, quickly, is a
-	// click; one that moved is a drag), and whether it went down on the card.
+	// The portrait card and the modes along the top, and where and when the left button went down (a press let go where
+	// it went down, quickly, is a click; one that moved is a drag), and whether it went down on the card or the modes.
 	private BoardEditorCard _card;
+	private BoardEditorModes _modes;
 	private Vector2 _pressedAt;
 	private RealTimeSince _sincePressed;
 	private bool _pressedOnCard;
@@ -93,7 +95,11 @@ internal sealed class BoardEditor : Panel
 		var view = AddChild<ScenePanel>( "view" );
 		_stage = new BoardEditorStage( view.RenderScene );
 		_card = AddChild<Panel>( "card-slot" ).AddChild<BoardEditorCard>( "card" );
+		_modes = AddChild<BoardEditorModes>( "modes" );
 	}
+
+	/// <summary>The modes along the top.</summary>
+	internal BoardEditorModes Modes => _modes;
 
 	// The card, in its slot on the right; made on first use as well, and moved into the slot, for an editor made before a
 	// reload changed them.
@@ -123,6 +129,7 @@ internal sealed class BoardEditor : Panel
 		_shownShift = _shift;
 		_coming = null;
 		_asideFrom = _asideTo = 0f;
+		_modes?.Select( 0 );
 		ShowBoard();
 		_hidden.Hide( scene, hide );
 		SetClass( "open", true );
@@ -219,7 +226,7 @@ internal sealed class BoardEditor : Panel
 	protected override void OnMouseDown( MousePanelEvent e )
 	{
 		base.OnMouseDown( e );
-		_pressedOnCard = Within( e.Target, _card );
+		_pressedOnCard = Within( e.Target, _card ) || Within( e.Target, _modes );
 		if ( _pressedOnCard )
 			return;
 		if ( e.MouseButton == MouseButtons.Left )
