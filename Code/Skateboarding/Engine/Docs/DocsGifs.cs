@@ -42,8 +42,6 @@ internal static class DocsGifs
 		("board-adjust", "Board shifted under the feet in the air without a grab: Space held in the air"),
 		("late-flip", "Ollie, then a late shove-it on the way down: Space tapped in the air (off a kicker for height)"),
 		("dark-catch", "Flip caught upside down (dark catch), grip side down"),
-		("front-flip", "Off a ramp: grab and front flip, land"),
-		("back-flip", "Off a ramp: grab and back flip, land"),
 		("grab-indy", "Indy grab (back hand, toe side) off a ramp"),
 		("grab-melon", "Melon grab (front hand, heel side) off a ramp"),
 		("grab-mute", "Mute grab (front hand, toe side) off a ramp"),

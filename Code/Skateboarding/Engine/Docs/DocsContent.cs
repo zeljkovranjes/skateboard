@@ -167,7 +167,7 @@ internal static class DocsContent
 			} ),
 
 		new( "air", "Tricks", "In the air",
-			"Once you are off the ground there is time for more: a late trick, a dark catch, or a flip of your whole body.",
+			"Once you are off the ground there is time for more: a late trick or a dark catch.",
 			null,
 			new DocsMove[]
 			{
@@ -189,14 +189,6 @@ internal static class DocsContent
 					"{catch} just after a flip pops, while the board is upside down.",
 					"{pad:catch} just after a flip pops, while the board is upside down.",
 					"Land on the ground upside down and you step off and run it out." ),
-				new( "front-flip", "Front flip",
-					"Flip your whole body forward with the board in your hand. Needs height: a big ramp or a drop.",
-					"In the air, hold {grab-back}, then hold {push}.",
-					"In the air, hold {pad:grab-back}, then push {ls} forward." ),
-				new( "back-flip", "Back flip",
-					"Flip your whole body backward with the board in your hand.",
-					"In the air, hold {grab-back}, then hold {brake}.",
-					"In the air, hold {pad:grab-back}, then pull {ls} back." ),
 			} ),
 
 		new( "grabs", "Tricks", "Grabs",
