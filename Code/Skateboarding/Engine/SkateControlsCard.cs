@@ -253,7 +253,7 @@ internal sealed class SkateControlsCard : Panel
 			new[]
 			{
 				(new[] { new Key( SandboxActions.FlipLeft ), new Key( SandboxActions.FlipRight ) }, "Flip"),
-				(new[] { new Key( SandboxActions.Flick ) }, "Trick stick"),
+				(new[] { new Key( SandboxActions.Flick ) }, "Flick tricks"),
 				(new[] { new Key( SandboxActions.GrabFront ), new Key( SandboxActions.GrabBack ) }, "Grab"),
 				(new[] { new Key( SandboxActions.GetOff ) }, "Get off")
 			}

@@ -26,7 +26,7 @@ get on or pick the board up, fades after a few seconds and comes back whenever y
 | Steer | A / D |
 | Ollie (hold to crouch, let go to pop) | Space |
 | Kickflip / heelflip (hold with Space) | Alt / X |
-| Trick stick (hold, then move the mouse: pull down, flick up) | Right mouse |
+| Flick tricks (hold, then move the mouse: pull down, flick up) | Right mouse |
 | Catch a flip | Left mouse |
 | Powerslide (hold) / revert (tap) | Shift |
 | Pump | Ctrl |
@@ -40,7 +40,7 @@ get on or pick the board up, fades after a few seconds and comes back whenever y
 | Action | Button |
 | --- | --- |
 | Steer | Left stick |
-| Trick stick (pull down, flick up or to a side) | Right stick |
+| Flick tricks (pull down, flick up or to a side) | Right stick |
 | Push / brake | A / B |
 | Powerslide (hold) / revert (tap) | Left trigger |
 | Pump | Left stick click |

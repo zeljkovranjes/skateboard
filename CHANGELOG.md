@@ -19,6 +19,7 @@ Riding in multiplayer - the host decides who rides; the rider's client owns and 
 Sleeping boards, distance posing, map gathering of only nearby shapes, faster edge welding and optimized local builds: a sleeping board costs nothing, a ridden one about 1.3 ms per physics step on a dense level, another player's rider about 0.14 ms a frame up close and less with distance
 # Animation
 The skater's clips load as the board appears, not as someone gets on, and the skater is never drawn in its bind pose
+Flick tricks - the controls card's "Trick stick" (hold right mouse, then flick) is now "Flick tricks", which says what it does
 Feet on the deck - the skater's shoes stand on the deck instead of floating up to 2 in over it, and lie flat on it over the tail
 Smooth motion - every bone of the skater carries on from what was shown, its speed changing by no more than a budget in a frame: clip changes and pose jumps ease over instead of snapping
 Stock walk - on foot the skater's hips and legs walk, run, start, stop and jump with the Citizen's own walk while its arms keep the board; on the board nothing changes
