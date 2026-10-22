@@ -55,8 +55,10 @@ public sealed class BrakeSmoke : GameObjectSystem<BrakeSmoke>
 			{
 				// Somewhere along the way the heel came this frame, so a fast drag leaves an even trail, not a clump a frame.
 				var spread = new Vector3( Random.Shared.Float( -1f, 1f ), Random.Shared.Float( -1f, 1f ), 0f );
-				var along = last != default && moving != Vector3.Zero ? Vector3.Lerp( last, heel, Random.Shared.Float() ) : heel;
-				var puff = effect.Emit( along + spread * 1.5f );
+				var share = last != default && moving != Vector3.Zero ? Random.Shared.Float() : 1f;
+				var along = Vector3.Lerp( last != default ? last : heel, heel, share );
+				// The puff's place in this frame's spawn, as far along the heel's way as it is.
+				var puff = effect.Emit( along + spread * 1.5f, share );
 				// Dragged along with the heel for a moment, kicked back off it and up a little; the rider rolls on and leaves
 				// it behind.
 				puff.Velocity = moving.WithZ( 0f ) * Dragged + away * Random.Shared.Float( 6f, 18f )

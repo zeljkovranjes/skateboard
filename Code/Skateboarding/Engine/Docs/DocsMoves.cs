@@ -43,7 +43,7 @@ internal static class DocsMoves
 	private static void Gif( Panel section, string id )
 	{
 		var path = DocsGifs.Path( id );
-		var texture = FileSystem.Mounted.FileExists( path ) ? Texture.Load( FileSystem.Mounted, path, false ) : null;
+		var texture = FileSystem.Mounted.FileExists( path ) ? Texture.LoadFromFileSystem( path, FileSystem.Mounted, false ) : null;
 		if ( texture is not null && texture.Width > 1 )
 			section.AddChild<Image>( "figure" ).Texture = texture;
 	}

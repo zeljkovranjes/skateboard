@@ -97,7 +97,7 @@ board.
   2 km away (`RideableSkateboard.RecallRange`), through anything in the way: it shakes where it lies for a moment
   (`RecallShake`, 0.6 s), lifting off the ground, then flies about a second from 30 m and at 70 m/s from farther. Everyone
   hears it: a rumble with crackles of static as it shakes, a thunder crack as it tears loose, a deep whoosh as it flies and
-  a boom as it lands in your hand, all made in code (the addon ships no sound files). Not while you ride or carry a board,
+  a boom as it lands in your hand, all made in code. Not while you ride or carry a board,
   and not while someone else has it.
 - **Powerslides.** Hold Shift (left trigger) at speed and the board turns across and scrubs to a stop in about two
   seconds from a fast push; tap it to revert.
@@ -109,6 +109,13 @@ board.
 - **Brake smoke.** Brake hard at speed (S) and smoke kicks up off the heel of the shoe you drag: white off the shoe,
   greying as it drifts up and fades behind you, more the faster you go. It is drawn in code; the addon ships no
   texture for it.
+- **Sounds.** Every board sounds as it rides, from real skateboarding recordings shaped as it goes: the wheels roll
+  in the recording of the ground under them (park concrete, a city street, wooden planks, tiles, a smooth floor; grass,
+  dirt and sand muffled and rustling, and each ground's own footstep sound mixed in), faster, higher and louder with
+  speed, and never heard to loop. The tail pops, landings thud as hard as you come down, the feet catch a flip, pushes
+  scuff, trucks clank onto a metal rail and grind it or crack onto a ledge, a deck slides, powerslides scrub, a dragging
+  shoe brakes and a board on its own tumbles. A different take every time, pitched a little differently. Everyone hears
+  every board; nothing is sent over the network for it (each client works it out from what it already knows).
 - **Flick tricks on the mouse.** While right mouse is held the mouse is the trick stick. Like a thumbstick let go, it
   springs back to centre when the mouse rests; only a windup, pulled down (or up, for a nollie) all the way, stays held
   until you flick.
@@ -137,3 +144,33 @@ nothing, and another player's rider about 0.14 ms a frame up close, less with di
 The board is the addon's own model in `Assets/models/skateboard_game`: `skateboard.vmdl` (`Skateboard.BoardModel`) and
 its lower levels of detail `skateboard_lod1.vmdl` and `skateboard_lod2.vmdl` (`Skateboard.BoardModelLevels`), switching at
 the thresholds of `skateboard.vmdl`'s LOD groups. Swap them on the prefab for your own.
+
+## Credits
+
+The board's sounds (`Assets/sounds/skate`) are cut from these recordings, all released under CC0 (public domain) on Freesound:
+
+- "Skateboard_Kick_Flip.wav" by mbezzola, https://freesound.org/s/105075/
+- "Skateboard_Ollie_Pop_Shove-It.wav" by mbezzola, https://freesound.org/s/105076/
+- "Longboard hitting the ground" by gerardcatala, https://freesound.org/s/153285/
+- "Skateboard Jump.wav" by tjandrasounds, https://freesound.org/s/196705/
+- "Skateboard rolling down wooden bridge.wav" by Bruno_Garcez, https://freesound.org/s/243762/
+- "Skateboard hitting metal rail.wav" by Bruno_Garcez, https://freesound.org/s/243766/
+- "Skateboard Drop.1.wav" by rokenjocu, https://freesound.org/s/262081/
+- "Skateboarding Indoors" by neotronable, https://freesound.org/s/346380/
+- "Skateboard_Grinds.wav" by BlackNeon1234, https://freesound.org/s/348326/
+- "BPS-SKATEBOARDING RIDING-Concrete Skatepark-Transition-Cruising.wav" by bspiller5, https://freesound.org/s/478162/
+- "BPS-SKATEBOARDING RIDING-City Street-Pushing-Fast-Long Strides-1.wav" by bspiller5, https://freesound.org/s/478165/
+- "BPS-SKATEBOARDING GRINDS-Concrete Halfpipe-Truck Grinds.wav" by bspiller5, https://freesound.org/s/478166/
+- "skateboard 360 flip" by nolimitkid, https://freesound.org/s/515225/
+- "popping up skateboard" by nolimitkid, https://freesound.org/s/515226/
+- "dropping skateboard" by nolimitkid, https://freesound.org/s/515227/
+- "skateboard ollie" by nolimitkid, https://freesound.org/s/515229/
+- "skateboard kickflip" by nolimitkid, https://freesound.org/s/515230/
+- "skateboard drop" by nolimitkid, https://freesound.org/s/515231/
+- "Powerslide" by jarrondesnudo, https://freesound.org/s/581378/
+- "powerslide (2)." by jarrondesnudo, https://freesound.org/s/581379/
+- "powerslide 3" by jarrondesnudo, https://freesound.org/s/581380/
+- "skateboard grinding on metal rail.wav" by 21100495, https://freesound.org/s/655371/
+- "skateboard gring on rail slide mix.wav" by 21100495, https://freesound.org/s/655376/
+- "Skate tuile" by Piement_infernal, https://freesound.org/s/713530/
+- "SPRTSkate_Drop-skateboard-ground-concrete_01" by nico-audio, https://freesound.org/s/717547/
