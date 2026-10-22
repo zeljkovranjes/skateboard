@@ -92,6 +92,6 @@ internal static class DocsInputLine
 		}
 		var glyph = row.AddChild<Image>( "glyph" );
 		glyph.Texture = texture;
-		glyph.Style.Width = Length.Pixels( 20f * texture.Width / texture.Height );
+		glyph.Style.Width = Length.Pixels( DocsStyles.GlyphHeight * texture.Width / texture.Height );
 	}
 }

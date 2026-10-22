@@ -55,6 +55,12 @@ public sealed class SkateDocsSystem : GameObjectSystem<SkateDocsSystem>
 			screen.ZIndex = 300;
 			screen.ScaleStrategy = ScreenPanel.AutoScale.FollowDesktopScaling;
 		}
+		// Docs made with an older look are made again (never while they are open).
+		if ( _docs is { IsValid: true } && _docs.Version != DocsStyles.Version && !SkateDocs.IsOpen )
+		{
+			_docs.Delete();
+			_docs = null;
+		}
 		if ( _docs is null || !_docs.IsValid )
 		{
 			var root = _screen.Components.Get<ScreenPanel>()?.GetPanel();

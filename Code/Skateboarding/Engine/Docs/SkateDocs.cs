@@ -5,13 +5,19 @@ using Sandbox.UI;
 namespace Skateboarding.Engine.Docs;
 
 /// <summary>
-/// The skateboard docs: a window of its own over the game, the pages listed down the side and the open page beside them.
-/// While it is open it holds the input focus, so it has the mouse and the keyboard, and the skate controls are blocked
-/// on both devices (SkateBindings.Blocked), so neither the player nor the board moves. The docs key or button
-/// (SkateBindings "docs") or Esc closes it; Esc is taken from the game, so it never also opens the game's menu.
+/// The skateboard docs, over the game blurred as the board editor is: the pages listed down the side as words, the open
+/// one white and underlined, and the open page beside them. While they are open they hold the input focus, so they have
+/// the mouse and the keyboard, and the skate controls are blocked on both devices (SkateBindings.Blocked), so neither the
+/// player nor the board moves. The docs key or button (SkateBindings "docs") or Esc closes them; Esc is taken from the
+/// game, so it never also opens the game's menu. The side comes in from the left as they open, and each page from the
+/// right as it is opened.
 /// </summary>
 internal sealed class SkateDocs : Panel
 {
+	// Frames a newly shown part waits before it is told to come in: it must be laid out once as hidden first, or it would
+	// appear in place at once instead of sliding in.
+	private const int RevealFrames = 2;
+
 	/// <summary>True while the docs are open on this client.</summary>
 	internal static bool IsOpen { get; private set; }
 
@@ -23,9 +29,16 @@ internal sealed class SkateDocs : Panel
 	private DocsPage _page;
 	private DocsKeybinds _keybinds;
 	private bool _justOpened;
+	private Panel _article;
+	private int _sideIn;
+	private int _articleIn;
+
+	/// <summary>The look the panel was made with (<see cref="DocsStyles.Version"/>; 0 for one made before it was kept).</summary>
+	internal int Version { get; private set; }
 
 	internal SkateDocs()
 	{
+		Version = DocsStyles.Version;
 		StyleSheet.Parse( DocsStyles.Sheet );
 		AcceptsFocus = true;
 		var window = AddChild<Panel>( "window" );
@@ -43,12 +56,15 @@ internal sealed class SkateDocs : Panel
 		_justOpened = true;
 		SkateBindings.Blocked = true;
 		Show( _page ?? _pages[ 0 ] );
+		_sideIn = RevealFrames;
 		Focus();
 	}
 
 	internal void Close()
 	{
 		_keybinds?.Cancel();
+		_sideIn = 0;
+		SetClass( "shown", false );
 		SetClass( "open", false );
 		IsOpen = false;
 		SkateBindings.Blocked = false;
@@ -87,6 +103,16 @@ internal sealed class SkateDocs : Panel
 		}
 		if ( SkateBindings.Toggled( "docs" ) )
 			Close();
+	}
+
+	// The side and the open page told to come in, once each has been laid out as hidden.
+	public override void Tick()
+	{
+		base.Tick();
+		if ( _sideIn > 0 && --_sideIn == 0 )
+			SetClass( "shown", true );
+		if ( _articleIn > 0 && --_articleIn == 0 )
+			_article?.SetClass( "shown", true );
 	}
 
 	public override void OnDeleted()
@@ -134,7 +160,7 @@ internal sealed class SkateDocs : Panel
 			Show( _page, true );
 	}
 
-	// The pages down the side, under their groups' names.
+	// The pages down the side as words, under their groups' names, each with an underline shown while it is open.
 	private void BuildSide()
 	{
 		string group = null;
@@ -147,8 +173,9 @@ internal sealed class SkateDocs : Panel
 				heading.SetClass( "first", group is null );
 				group = page.Group;
 			}
-			var link = _side.AddChild<Label>( "nav-link" );
-			link.Text = page.Title;
+			var link = _side.AddChild<Panel>( "nav-link" );
+			link.AddChild<Label>( "nav-name" ).Text = page.Title;
+			link.AddChild<Panel>( "underline" );
 			var shown = page;
 			link.AddEventListener( "onclick", () => Show( shown ) );
 			_links[ page.Id ] = link;
@@ -174,6 +201,16 @@ internal sealed class SkateDocs : Panel
 		_main.ScrollOffset = keepScroll ? scroll : Vector2.Zero;
 		_keybinds = null;
 		var article = _main.AddChild<Panel>( "article" );
+		_article = article;
+		// A page opened comes in from the right; one drawn again where it was (a key changed) is there at once.
+		if ( keepScroll )
+		{
+			article.SetClass( "shown", true );
+			_articleIn = 0;
+		}
+		else
+			_articleIn = RevealFrames;
+		article.AddChild<Label>( "eyebrow" ).Text = page.Group;
 		article.AddChild<Label>( "h1" ).Text = page.Title;
 		article.AddChild<Label>( "lead" ).Text = page.Lead;
 		if ( page.Basics is { Length: > 0 } )
