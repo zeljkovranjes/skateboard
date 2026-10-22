@@ -238,8 +238,8 @@ internal static class DocsContent
 					"Hold {rs} part way forward." ),
 			} ),
 
-		new( "grinds", "Spots", "Grinds",
-			"Rails and ledges marked as grind rails can be ground. Ollie onto one riding along it, and lean to choose the grind.",
+		new( "grinds", "Spots", "Grinds and slides",
+			"Rails and ledges marked as grind rails can be ground. Ollie onto one riding along it to grind, or turn across it to slide.",
 			null,
 			new DocsMove[]
 			{
@@ -255,6 +255,10 @@ internal static class DocsContent
 					"Grind on the front truck, tail up.",
 					"On the rail, hold {nose-manual}.",
 					"On the rail, hold {rs} part way forward." ),
+				new( "boardslide", "Boardslide",
+					"The board turned across the rail, sliding on its middle.",
+					"Ollie up to the rail and hold {steer-left} or {steer-right} in the air to turn the board across it.",
+					"Ollie up to the rail and hold {ls} to a side in the air to turn the board across it." ),
 				new( "grind-pop-out", "Pop out",
 					"Ollie off the rail, back to the ground.",
 					"On the rail, tap {ollie}.",
