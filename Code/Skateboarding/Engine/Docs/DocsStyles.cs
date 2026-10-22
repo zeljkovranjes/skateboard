@@ -15,7 +15,7 @@ internal static class DocsStyles
 	/// Raised whenever the look or the layout changes: docs made before are made again as they next open (a panel parses
 	/// its styles once, as it is made).
 	/// </summary>
-	internal const int Version = 4;
+	internal const int Version = 5;
 
 	/// <summary>The height of a controller button's picture in a how-to line (pixels; the width follows its shape).</summary>
 	internal const float GlyphHeight = 24f;
@@ -67,6 +67,29 @@ internal static class DocsStyles
 		{
 			opacity: 1;
 			transform: translateX( 0px );
+		}
+		SkateDocs .exit
+		{
+			position: absolute;
+			right: 56px;
+			bottom: 40px;
+			font-size: 14px;
+			font-weight: 600;
+			letter-spacing: 1.6px;
+			text-transform: uppercase;
+			color: rgba( 255, 255, 255, 0.7 );
+			cursor: pointer;
+			opacity: 0;
+			transition: opacity 0.35s ease-out, color 0.2s ease-out;
+		}
+		SkateDocs.shown .exit
+		{
+			opacity: 1;
+		}
+		SkateDocs .exit:hover
+		{
+			color: white;
+			text-decoration: underline;
 		}
 		SkateDocs .nav-heading
 		{

@@ -9,8 +9,8 @@ namespace Skateboarding.Engine.Docs;
 /// one white and underlined, and the open page beside them. While they are open they hold the input focus, so they have
 /// the mouse and the keyboard, and the skate controls are blocked on both devices (SkateBindings.Blocked), so neither the
 /// player nor the board moves. The docs key or button (SkateBindings "docs") or Esc closes them; Esc is taken from the
-/// game, so it never also opens the game's menu. The side comes in from the left as they open, and each page from the
-/// right as it is opened.
+/// game, so it never also opens the game's menu; Exit, at the bottom right, closes them with the mouse. The side comes
+/// in from the left as they open, and each page from the right as it is opened.
 /// </summary>
 internal sealed class SkateDocs : Panel
 {
@@ -20,6 +20,12 @@ internal sealed class SkateDocs : Panel
 
 	/// <summary>True while the docs are open on this client.</summary>
 	internal static bool IsOpen { get; private set; }
+
+	/// <summary>
+	/// Seconds since the docs last closed: the press that closed them (read by the window and by SkateDocsSystem, in either
+	/// order) must not open them again.
+	/// </summary>
+	internal static RealTimeSince SinceClosed { get; private set; } = 10f;
 
 	private readonly Panel _side;
 	private readonly Panel _main;
@@ -46,6 +52,9 @@ internal sealed class SkateDocs : Panel
 		_main = window.AddChild<Panel>( "main" );
 		BuildSide();
 		Show( _pages[ 0 ] );
+		var exit = AddChild<Label>( "exit" );
+		exit.Text = "Exit";
+		exit.AddEventListener( "onclick", Close );
 		SkateBindings.Changed += OnBindingsChanged;
 	}
 
@@ -62,6 +71,9 @@ internal sealed class SkateDocs : Panel
 
 	internal void Close()
 	{
+		if ( !IsOpen && !HasClass( "open" ) )
+			return;
+		SinceClosed = 0f;
 		_keybinds?.Cancel();
 		// Volumes are saved as a slider is let go; closing on the sound page saves them too, should a release be missed.
 		if ( _page?.Kind == DocsPageKind.Sound )
@@ -86,8 +98,9 @@ internal sealed class SkateDocs : Panel
 		// Clicking about can take the focus away, and with it the keyboard: it is taken back at once.
 		if ( !HasFocus )
 			Focus();
-		// Esc is the docs' while they are open: it ends a rebind's wait, or closes them.
-		if ( Input.EscapePressed )
+		// Esc is the docs' while they are open: it ends a rebind's wait, or closes them. It is read off the keyboard too, in
+		// case the game's own Esc was taken first.
+		if ( Input.EscapePressed || Input.Keyboard.Pressed( "escape" ) )
 		{
 			Input.EscapePressed = false;
 			if ( _keybinds is { Listening: true } )
@@ -121,9 +134,12 @@ internal sealed class SkateDocs : Panel
 	public override void OnDeleted()
 	{
 		SkateBindings.Changed -= OnBindingsChanged;
-		if ( IsOpen )
+		// Only the open docs let go: closed ones, made again with a newer look, must not close the ones in their place.
+		if ( IsOpen && HasClass( "open" ) )
+		{
 			SkateBindings.Blocked = false;
-		IsOpen = false;
+			IsOpen = false;
+		}
 		base.OnDeleted();
 	}
 

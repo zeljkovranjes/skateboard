@@ -33,7 +33,8 @@ public sealed class SkateDocsSystem : GameObjectSystem<SkateDocsSystem>
 			_docs?.Frame();
 			return;
 		}
-		_opening |= SkateBindings.Toggled( "docs" );
+		// The press that just closed the docs (read by the window first) does not open them again.
+		_opening |= SkateBindings.Toggled( "docs" ) && SkateDocs.SinceClosed > 0.3f;
 		if ( !_opening )
 			return;
 		// The screen panel makes its root a frame after it is created: the docs open as soon as there is one.
