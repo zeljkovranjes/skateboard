@@ -50,6 +50,7 @@ Smooth flip kicks - as the board flips under the feet, the lift that keeps them 
 Hand plant let go - the rider turns back from the plant along the turn it had as the hand left the lip, instead of swinging round as the board comes level
 Smooth get-ups - getting up from a bail no longer swings the hips out and back in its first moment when you land face down
 Wall rides that take - turning onto a wall no longer counts as crashing into it, a bounce as the board comes onto the wall keeps the ride, and a ride starts from a little less speed
+Longer wall rides - the board arcs down the wall for about a second instead of dropping straight off it
 Body flips off drops - ride off a roof or a big drop, grab and lean, and you flip: the drop below now counts toward the air a flip needs
 Settling follows the clips - a flip's front foot no longer lags its kick and snaps after it, and grabs, hand plants and runouts settle smoother at high frame rates
 Docs: darkslide, flip hold, and the front and back flips back (from a drop or right at a big kicker's lip), each checked as written on keys and pad
