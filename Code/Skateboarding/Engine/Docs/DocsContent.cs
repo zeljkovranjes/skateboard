@@ -174,7 +174,7 @@ internal static class DocsContent
 				new( "late-flip", "Late shove-it",
 					"Spin the board under you on the way down, a moment after the pop.",
 					"In the air, tap {ollie}.",
-					"In the air, flick {rs}.",
+					"In the air, flick {rs}. Flick the right stick again before you land for a second one.",
 					"Held instead of tapped, the same key leans the board: see the board adjust below." ),
 				new( "late-kickflip", "Late kickflip",
 					"Kick the board into a flip on the way down, a moment after the pop.",
