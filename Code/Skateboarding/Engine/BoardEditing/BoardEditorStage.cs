@@ -75,7 +75,12 @@ internal sealed class BoardEditorStage
 			var origin = deck.WorldTransform.WithScale( 1f );
 			var bounds = default( BBox );
 			var any = false;
+			// The board model's parts: the portrait layer is made in its own space, which the deck is drawn in through its
+			// placement (a deck taken apart into parts) or as it is (a whole model on the deck).
+			var skateboard = board.Components.Get<Components.Skateboard>();
+			var parts = skateboard?.BoardModel is { } boardModel ? BoardModelParts.Of( boardModel, skateboard.BoardModelLevels, out _ ) : null;
 			GameObject deckPart = null;
+			var placement = global::Transform.Zero;
 			foreach ( var source in board.Components.GetAll<ModelRenderer>( FindMode.EnabledInSelfAndDescendants ) )
 			{
 				if ( source.Model is null )
@@ -85,9 +90,12 @@ internal sealed class BoardEditorStage
 					LocalTransform = origin.ToLocal( source.WorldTransform )
 				};
 				Copy( source, part );
-				// The deck model the portrait layer is made to sit on.
-				if ( deckPart is null && source.Model.ResourcePath?.Contains( "skateboard_game/skateboard", StringComparison.OrdinalIgnoreCase ) == true )
+				// The deck the portrait layer sits on.
+				if ( deckPart is null && parts is not null && (source.Model == parts.Deck || source.Model == parts.Source) )
+				{
 					deckPart = part;
+					placement = source.Model == parts.Deck ? parts.Placement : global::Transform.Zero;
+				}
 				var box = source.Model.Bounds.Transform( part.LocalTransform );
 				bounds = any ? bounds.AddBBox( box ) : box;
 				any = true;
@@ -100,7 +108,7 @@ internal sealed class BoardEditorStage
 			var camera = _camera.Components.Get<CameraComponent>();
 			camera.FovAxis = CameraComponent.Axis.Vertical;
 			_camera.Components.GetOrCreate<Highlight>();
-			Portraits.Attach( _scene, deckPart );
+			Portraits.Attach( _scene, deckPart, placement, parts?.Source );
 		}
 	}
 

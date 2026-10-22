@@ -264,6 +264,16 @@ internal sealed class BoardEditor : Panel
 		return false;
 	}
 
+	/// <summary>The editor's scene (the board's copy, its portraits and the camera).</summary>
+	internal BoardEditorStage Stage => _stage;
+
+	/// <summary>Turns the board to <paramref name="yaw"/> and <paramref name="pitch"/> (degrees), as a drag would.</summary>
+	internal void Turn( float yaw, float pitch )
+	{
+		_yaw = yaw;
+		_pitch = Math.Clamp( pitch, -MaxPitch, MaxPitch );
+	}
+
 	// Back to how it opened: turned to show the grip and a truck, the whole board in view, in the middle.
 	private void Reset()
 	{
