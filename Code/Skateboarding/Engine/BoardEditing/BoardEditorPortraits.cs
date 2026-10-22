@@ -9,9 +9,8 @@ namespace Skateboarding.Engine.BoardEditing;
 /// put on the deck's copy, each portrait its own object, so the one under the mouse grows and lifts off the deck, and
 /// the one clicked pops up, a little larger again, with an outline round it. Each portrait's size follows a spring, so it
 /// grows, pops and settles without jumping. A portrait is found under the mouse by the ray through it meeting its box,
-/// from outside the deck only: seen through the deck from its other face, none is. Which way the portraits face is read
-/// from the layer itself (it is thinnest across the deck, and lies on the outer side of the deck model's middle), so it
-/// does not hang on how the board model was authored.
+/// from below the deck only: seen through the deck from above, none is. The portraits face the board's down, which the
+/// board's parts are laid out by (+Z up, the model's placement taking it there), whatever way the model was authored.
 /// </summary>
 internal sealed class BoardEditorPortraits
 {
@@ -50,10 +49,11 @@ internal sealed class BoardEditorPortraits
 
 	/// <summary>
 	/// Puts the portrait layer on <paramref name="deck"/> (the deck's copy), in place of any earlier one. The layer is
-	/// made in the board model's own space (<paramref name="source"/>), which <paramref name="placement"/> takes into the
-	/// deck's. Nothing without a deck or without the portrait layer in the game.
+	/// made in the board model's own space, which <paramref name="placement"/> takes into the deck's, and
+	/// <paramref name="upright"/> turns that space to the board's (+Z up). Nothing without a deck or without the portrait
+	/// layer in the game.
 	/// </summary>
-	internal void Attach( Scene scene, GameObject deck, Transform placement, Model source )
+	internal void Attach( Scene scene, GameObject deck, Transform placement, Rotation upright )
 	{
 		Clear();
 		var prefab = deck.IsValid() ? ResourceLibrary.Get<PrefabFile>( PortraitDirectory.PrefabPath ) : null;
@@ -77,7 +77,7 @@ internal sealed class BoardEditorPortraits
 			_scales.Add( 1f );
 			_speeds.Add( 0f );
 		}
-		_outward = Outward( source );
+		_outward = (upright.Inverse * Vector3.Down).Normal;
 		_layer.LocalPosition = _outward * LayerLift;
 	}
 
@@ -149,21 +149,6 @@ internal sealed class BoardEditorPortraits
 			_speeds[ tile ] = speed;
 			Place( tile, scale );
 		}
-	}
-
-	// The way the portraits face: along the axis the layer is thinnest on (across the deck), toward the side of the board
-	// model's middle the layer lies on. Down without a model to tell.
-	private Vector3 Outward( Model model )
-	{
-		if ( model is null || _boxes.Count == 0 )
-			return Vector3.Down;
-		var layer = _boxes[ 0 ];
-		for ( var tile = 1; tile < _boxes.Count; tile++ )
-			layer = layer.AddBBox( _boxes[ tile ] );
-		var size = layer.Size;
-		var axis = size.x <= size.y && size.x <= size.z ? 0 : size.y <= size.z ? 1 : 2;
-		var sign = layer.Center[ axis ] - model.Bounds.Center[ axis ] >= 0f ? 1f : -1f;
-		return axis == 0 ? new Vector3( sign, 0f, 0f ) : axis == 1 ? new Vector3( 0f, sign, 0f ) : new Vector3( 0f, 0f, sign );
 	}
 
 	// A portrait drawn at a size, grown about its own middle and lifted off the deck as it grows.

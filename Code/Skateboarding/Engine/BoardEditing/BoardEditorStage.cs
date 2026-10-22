@@ -77,7 +77,8 @@ internal sealed class BoardEditorStage
 			var any = false;
 			// The board model's parts: the portrait layer is made in its own space, which the deck is drawn in through its
 			// placement (a deck taken apart into parts) or as it is (a whole model on the deck).
-			var skateboard = board.Components.Get<Components.Skateboard>();
+			// Carried, the board's Skateboard is switched off: it is looked for whether on or off.
+			var skateboard = board.Components.Get<Components.Skateboard>( FindMode.EverythingInSelf );
 			var parts = skateboard?.BoardModel is { } boardModel ? BoardModelParts.Of( boardModel, skateboard.BoardModelLevels, out _ ) : null;
 			GameObject deckPart = null;
 			var placement = global::Transform.Zero;
@@ -108,7 +109,7 @@ internal sealed class BoardEditorStage
 			var camera = _camera.Components.Get<CameraComponent>();
 			camera.FovAxis = CameraComponent.Axis.Vertical;
 			_camera.Components.GetOrCreate<Highlight>();
-			Portraits.Attach( _scene, deckPart, placement, parts?.Source );
+			Portraits.Attach( _scene, deckPart, placement, parts?.Placement.Rotation ?? Rotation.Identity );
 		}
 	}
 
