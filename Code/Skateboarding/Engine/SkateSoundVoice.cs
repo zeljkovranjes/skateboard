@@ -41,18 +41,21 @@ internal sealed class SkateSoundVoice : IDisposable
 	/// <summary>True once the board has been silent a while: the voice can be let go.</summary>
 	internal bool Quiet => _synth.Quiet;
 
-	/// <summary>Tops the stream up to <see cref="Ahead"/> with the sound of these controls.</summary>
-	internal void Feed( in SkateSoundControls controls )
+	/// <summary>Tops the stream up to <see cref="Ahead"/> with the sound of these controls, at the player's volumes.</summary>
+	internal void Feed( in SkateSoundControls controls, in SkateSoundMix mix )
 	{
+		_synth.Mix = mix;
+		if ( _handle is not null )
+			_handle.Volume = mix.All;
 		var want = Math.Min( (int)(Ahead * Rate) - _stream.QueuedSampleCount, _mix.Length );
 		var room = _stream.MaxWriteSampleCount;
 		if ( room > 0 )
 			want = Math.Min( want, room );
 		if ( want <= 0 )
 			return;
-		var mix = _mix.AsSpan( 0, want );
-		_synth.Render( mix, controls );
-		_stream.WriteData( Pcm( mix, _pcm ) );
+		var samples = _mix.AsSpan( 0, want );
+		_synth.Render( samples, controls );
+		_stream.WriteData( Pcm( samples, _pcm ) );
 	}
 
 	public void Dispose()
@@ -61,15 +64,15 @@ internal sealed class SkateSoundVoice : IDisposable
 		_stream.Dispose();
 	}
 
-	/// <summary>Plays a short sound once at the board, following it; the stream is let go once it has played.</summary>
-	internal static void Once( GameObject board, ReadOnlySpan<float> sound )
+	/// <summary>Plays a short sound once at the board at a volume, following it; the stream is let go once it has played.</summary>
+	internal static void Once( GameObject board, ReadOnlySpan<float> sound, float volume )
 	{
-		if ( sound.Length == 0 || !board.IsValid() )
+		if ( sound.Length == 0 || volume <= 0f || !board.IsValid() )
 			return;
 		var stream = new SoundStream( Rate );
 		stream.WriteData( Pcm( sound[..Math.Min( sound.Length, OncePcm.Length )], OncePcm ) );
 		stream.Close();
-		Follow( stream.Play(), board );
+		Follow( stream.Play( volume ), board );
 	}
 
 	private static void Follow( SoundHandle handle, GameObject board )

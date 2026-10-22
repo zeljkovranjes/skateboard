@@ -63,6 +63,9 @@ internal sealed class SkateDocs : Panel
 	internal void Close()
 	{
 		_keybinds?.Cancel();
+		// Volumes are saved as a slider is let go; closing on the sound page saves them too, should a release be missed.
+		if ( _page?.Kind == DocsPageKind.Sound )
+			SkateSoundSettings.Save();
 		_sideIn = 0;
 		SetClass( "shown", false );
 		SetClass( "open", false );
@@ -230,6 +233,9 @@ internal sealed class SkateDocs : Panel
 				break;
 			case DocsPageKind.Keybinds:
 				_keybinds = article.AddChild<DocsKeybinds>();
+				break;
+			case DocsPageKind.Sound:
+				article.AddChild<DocsSound>();
 				break;
 			default:
 				DocsMoves.Add( article, page.Moves );

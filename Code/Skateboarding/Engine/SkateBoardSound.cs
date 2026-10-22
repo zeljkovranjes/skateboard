@@ -151,11 +151,11 @@ internal sealed class SkateBoardSound : IDisposable
 		if ( state.Grind != _grind )
 		{
 			if ( _grind == SkateGrind.None )
-				Once( _hits.GrindOn( Kind( state.Grind ), Math.Clamp( speed / 6f, 0.3f, 1f ), _rail.Sound ) );
+				Once( _hits.GrindOn( Kind( state.Grind ), Math.Clamp( speed / 6f, 0.3f, 1f ), _rail.Sound ), Mix.Grinds );
 			else if ( state.Grind == SkateGrind.None )
-				Once( _hits.GrindOff( Kind( _grind ), Math.Clamp( speed / 6f, 0.3f, 1f ), _rail.Sound ) );
+				Once( _hits.GrindOff( Kind( _grind ), Math.Clamp( speed / 6f, 0.3f, 1f ), _rail.Sound ), Mix.Grinds );
 			else if ( Kind( state.Grind ) != Kind( _grind ) )
-				Once( _hits.GrindOn( Kind( state.Grind ), 0.4f, _rail.Sound ) );
+				Once( _hits.GrindOn( Kind( state.Grind ), 0.4f, _rail.Sound ), Mix.Grinds );
 		}
 
 		// A flipped board caught by the feet.
@@ -165,14 +165,14 @@ internal sealed class SkateBoardSound : IDisposable
 			if ( !_caught && _spinPeak > Flipped && _spin < Caught )
 			{
 				_caught = true;
-				Once( _hits.Catch( Math.Clamp( _spinPeak / 25f, 0.3f, 1f ) ) );
+				Once( _hits.Catch( Math.Clamp( _spinPeak / 25f, 0.3f, 1f ) ), Mix.Tricks );
 			}
 		}
 
 		// A push: the pushing foot coming down on the ground.
 		var pushing = riding && rolling > 0f && board.PushContact == true;
 		if ( pushing && !_pushing )
-			Once( _hits.Push( Math.Clamp( 0.4f + speed / 8f, 0.4f, 1f ), _ground.Sound, _ground.Grains ) );
+			Once( _hits.Push( Math.Clamp( 0.4f + speed / 8f, 0.4f, 1f ), _ground.Sound, _ground.Grains ), Mix.Rolling );
 		_pushing = pushing;
 
 		// A bail lets the board go with a knock; a board on its own knocks into whatever stops it short.
@@ -235,23 +235,28 @@ internal sealed class SkateBoardSound : IDisposable
 	private void Pop( float climb )
 	{
 		_popped = true;
-		Once( _hits.Pop( Math.Clamp( (climb - 1f) / 2.5f, 0.3f, 1f ), _ground.Sound, _ground.Grains ) );
+		Once( _hits.Pop( Math.Clamp( (climb - 1f) / 2.5f, 0.3f, 1f ), _ground.Sound, _ground.Grains ), Mix.Tricks );
 	}
 
 	private void Land( float speed )
 	{
 		if ( speed < 0.3f )
 			return;
-		Once( _hits.Land( Math.Clamp( (speed - 0.3f) / 4f, 0.1f, 1f ), _ground.Sound, _ground.Grains ) );
+		Once( _hits.Land( Math.Clamp( (speed - 0.3f) / 4f, 0.1f, 1f ), _ground.Sound, _ground.Grains ), Mix.Tricks );
 	}
 
 	private void Knock( float strength )
 	{
 		_sinceKnock = 0f;
-		Once( _hits.Knock( strength, _ground.Sound ) );
+		Once( _hits.Knock( strength, _ground.Sound ), Mix.Tricks );
 	}
 
-	private void Once( ReadOnlySpan<float> sound ) => SkateSoundVoice.Once( _board.GameObject, sound );
+	// The player's volumes (the docs' Sound page).
+	private static SkateSoundMix Mix => SkateSoundSettings.Mix;
+
+	// A short sound at the board, at its kind's volume and the volume of all the board's sounds.
+	private void Once( ReadOnlySpan<float> sound, float volume ) =>
+		SkateSoundVoice.Once( _board.GameObject, sound, Mix.All * volume );
 
 	// The ground under the board (or the rail it grinds), looked at every LookEvery seconds.
 	private void Look( float delta, bool grinding, SkateRider rider )
@@ -305,7 +310,7 @@ internal sealed class SkateBoardSound : IDisposable
 				return;
 			_voice = new SkateSoundVoice( _board.GameObject, _board.GameObject.Id.GetHashCode(), _bank );
 		}
-		_voice.Feed( controls );
+		_voice.Feed( controls, Mix );
 		if ( _quietFor > Linger && _voice.Quiet )
 		{
 			_voice.Dispose();

@@ -15,7 +15,7 @@ internal static class DocsStyles
 	/// Raised whenever the look or the layout changes: docs made before are made again as they next open (a panel parses
 	/// its styles once, as it is made).
 	/// </summary>
-	internal const int Version = 3;
+	internal const int Version = 4;
 
 	/// <summary>The height of a controller button's picture in a how-to line (pixels; the width follows its shape).</summary>
 	internal const float GlyphHeight = 24f;
@@ -426,6 +426,74 @@ internal static class DocsStyles
 		SkateDocs .conflict .link
 		{
 			margin-left: 20px;
+		}
+		SkateDocs .td-volume
+		{
+			flex-grow: 1;
+			flex-shrink: 1;
+			flex-direction: column;
+		}
+		SkateDocs .td-covers
+		{
+			margin-top: 2px;
+			font-size: 13px;
+			color: rgba( 255, 255, 255, 0.4 );
+		}
+		SkateDocs .td-slider
+		{
+			flex-shrink: 0;
+			margin: 0 24px;
+		}
+		SkateDocs .td-value
+		{
+			width: 56px;
+			flex-shrink: 0;
+			text-align: right;
+			font-size: 15px;
+			font-weight: 600;
+			color: rgba( 255, 255, 255, 0.85 );
+		}
+		SkateDocs .slider
+		{
+			position: relative;
+			width: 260px;
+			height: 24px;
+			cursor: pointer;
+		}
+		SkateDocs .rail, SkateDocs .fill
+		{
+			position: absolute;
+			left: 0;
+			top: 11px;
+			height: 2px;
+			border-radius: 1px;
+			pointer-events: none;
+		}
+		SkateDocs .rail
+		{
+			right: 0;
+			background-color: rgba( 255, 255, 255, 0.22 );
+		}
+		SkateDocs .fill
+		{
+			background-color: white;
+		}
+		SkateDocs .knob
+		{
+			position: absolute;
+			top: 5px;
+			width: 14px;
+			height: 14px;
+			margin-left: -7px;
+			border-radius: 7px;
+			background-color: white;
+			box-shadow: 0px 2px 8px rgba( 0, 0, 0, 0.4 );
+			pointer-events: none;
+			transition: transform 0.15s ease-out;
+		}
+		SkateDocs .slider:hover .knob
+		{
+			transform: scale( 1.2 );
 		}
 		""";
 }

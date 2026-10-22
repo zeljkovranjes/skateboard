@@ -45,6 +45,7 @@ internal sealed class SkateRollSynth
 	private SkateSoundSurface _rail = SkateSoundSurface.Metal;
 	private float _roll, _grind, _slide, _brake, _spin, _trucks = 1f;
 	private float _speed, _slip, _spinRate;
+	private float _rollingVolume = 1f, _trickVolume = 1f, _grindVolume = 1f;
 	private SoundGrains _grainSource;
 
 	private LoopPlayer _rollNow, _rollWas, _grindLoop, _slideLoop, _scrubLoop, _dragLoop;
@@ -71,6 +72,9 @@ internal sealed class SkateRollSynth
 		_noise = new SoundNoise( seed );
 		_bank = bank;
 	}
+
+	/// <summary>How loud the player wants the rolling, tricks and grinds (its All is the voice's own volume).</summary>
+	internal SkateSoundMix Mix { get; set; } = SkateSoundMix.Full;
 
 	/// <summary>True once the board has made no sound for half a second: its voice can be let go.</summary>
 	internal bool Quiet => _quiet > Rate / 2;
@@ -108,6 +112,9 @@ internal sealed class SkateRollSynth
 		_speed += (speed - _speed) * settle;
 		_slip += (c.Slide - _slip) * settle;
 		_spinRate = c.Spin;
+		_rollingVolume += (Mix.Rolling - _rollingVolume) * settle;
+		_trickVolume += (Mix.Tricks - _trickVolume) * settle;
+		_grindVolume += (Mix.Grinds - _grindVolume) * settle;
 		if ( grinding )
 			_trucks += ((c.Grind == SkateGrindSound.Trucks ? 1f : 0f) - _trucks) * settle;
 
@@ -190,7 +197,7 @@ internal sealed class SkateRollSynth
 			burst = MathF.Max( 0f, burst - 0.38f ) * 4f;
 			sound += 0.2f * g.Rustle * burst * _rustleLow.Low( high, OnePole.Step( 3500f, Rate ) );
 		}
-		return RollLoudness * _roll * g.Rumble * sound;
+		return RollLoudness * _rollingVolume * _roll * g.Rumble * sound;
 	}
 
 	// Trucks grinding metal or concrete, or the deck sliding, at the board's pace.
@@ -207,7 +214,7 @@ internal sealed class SkateRollSynth
 		}
 		if ( trucks < 0.99f )
 			sound += SlideLoudness * (1f - trucks) * _slideLoop.Next( _bank?.Slide, rate, Rate, ref _noise );
-		return _grind * sound;
+		return _grindVolume * _grind * sound;
 	}
 
 	// A powerslide: the wheels scrubbing sideways, faster and higher the faster they slip.
@@ -216,7 +223,7 @@ internal sealed class SkateRollSynth
 		var rate = Math.Clamp( 0.85f + 0.04f * _slip, 0.85f, 1.25f );
 		var sound = _scrubLoop.Next( _bank?.Powerslide, rate, Rate, ref _noise );
 		sound = _scrubLow2.Low( _scrubLow1.Low( sound, _scrubStep ), _scrubStep );
-		return ScrubLoudness * _slide * (0.4f + 0.6f * _ground.Rumble) * sound;
+		return ScrubLoudness * _rollingVolume * _slide * (0.4f + 0.6f * _ground.Rumble) * sound;
 	}
 
 	// A shoe dragged over the ground to slow the board: a powerslide's scrub, higher, softer and darker.
@@ -224,7 +231,7 @@ internal sealed class SkateRollSynth
 	{
 		var sound = _dragLoop.Next( _bank?.Powerslide, 1.3f, Rate, ref _noise );
 		sound = _dragLow2.Low( _dragLow1.Low( sound, _dragStep ), _dragStep );
-		return DragLoudness * _brake * (1f - 0.5f * _ground.Damp) * sound;
+		return DragLoudness * _rollingVolume * _brake * (1f - 0.5f * _ground.Damp) * sound;
 	}
 
 	// The board flipping or spinning in the air: air rushing past it, loudest as its broad faces cut through.
@@ -233,7 +240,7 @@ internal sealed class SkateRollSynth
 		_angle += _spinRate / Rate;
 		if ( _angle > MathF.Tau ) _angle -= MathF.Tau;
 		var faces = 0.3f + 0.7f * MathF.Abs( MathF.Sin( _angle ) );
-		return WhooshLoudness * _spin * faces * _whoosh.Band( _noise.Next() );
+		return WhooshLoudness * _trickVolume * _spin * faces * _whoosh.Band( _noise.Next() );
 	}
 
 	// Tiny pieces of the ground's own sound scattered under the wheels and under a dragging shoe.
@@ -264,7 +271,7 @@ internal sealed class SkateRollSynth
 			grain.Place += grain.Step;
 			grain.Age += 1f;
 		}
-		return _grainLow.Low( sound, OnePole.Step( MathF.Max( _ground.Bright * 0.6f, 2000f * _brake ), Rate ) );
+		return _rollingVolume * _grainLow.Low( sound, OnePole.Step( MathF.Max( _ground.Bright * 0.6f, 2000f * _brake ), Rate ) );
 	}
 
 	private void Start( SoundGrains source )

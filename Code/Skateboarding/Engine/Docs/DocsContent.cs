@@ -385,5 +385,9 @@ internal static class DocsContent
 		new( "keybinds", "Setup", "Keybinds",
 			"Change any keyboard key. Change waits for the key you press.",
 			null, System.Array.Empty<DocsMove>(), DocsPageKind.Keybinds ),
+
+		new( "sound", "Setup", "Sound",
+			"How loud the boards are: all their sounds, or the rolling, tricks and grinds on their own.",
+			null, System.Array.Empty<DocsMove>(), DocsPageKind.Sound ),
 	};
 }

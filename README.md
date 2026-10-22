@@ -116,6 +116,8 @@ board.
   scuff, trucks clank onto a metal rail and grind it or crack onto a ledge, a deck slides, powerslides scrub, a dragging
   shoe brakes and a board on its own tumbles. A different take every time, pitched a little differently. Everyone hears
   every board; nothing is sent over the network for it (each client works it out from what it already knows).
+  Turn them up or down on the docs' **Sound** page (Q, then Sound): all of them, or the rolling, tricks and grinds on
+  their own, from silent to 150%; your volumes are kept for next time.
 - **Flick tricks on the mouse.** While right mouse is held the mouse is the trick stick. Like a thumbstick let go, it
   springs back to centre when the mouse rests; only a windup, pulled down (or up, for a nollie) all the way, stays held
   until you flick.
