@@ -77,6 +77,8 @@ internal static class SkateBindings
 		(new( "use", "Board", "Get on and off; hold on foot to pick the board up or call it back", "e", "X", true ),
 			Scope.Always, "Use", "x"),
 		(new( "throw", "Board", "Throw the board (carrying it)", "mouse1", "RT", false ), Scope.Carrying, "attack1", "righttrigger"),
+		(new( "board-editor", "Board", "Board editor: look your board over (carrying it)", "i", "D-pad up", false ),
+			Scope.Carrying, "Flashlight", "dpadnorth"),
 		(new( "docs", "Board", "Open and close these docs (riding or carrying the board)", "q", "View (Back)", false ),
 			Scope.Board, "Score", "switchleftmenu"),
 	};
@@ -276,10 +278,10 @@ internal static class SkateBindings
 	/// <summary>The game action that reads the control's controller button, or null.</summary>
 	internal static string PadAction( string id ) => Table.FirstOrDefault( row => row.Binding.Id == id ).PadAction;
 
-	// A control answers unless the controls are blocked (the docs' own always does), and one for the board only while the
-	// player has it, riding or carrying it.
+	// A control answers unless the controls are blocked (the docs' own and the board editor's always do), and one for the
+	// board only while the player has it, riding or carrying it.
 	private static bool Answers( string id ) =>
-		(!Blocked || id == "docs") && (ScopeOf( id ) != Scope.Board || Systems.RideKeys.WithBoard);
+		(!Blocked || id is "docs" or "board-editor") && (ScopeOf( id ) != Scope.Board || Systems.RideKeys.WithBoard);
 
 	private static bool KeyDown( string key ) =>
 		!string.IsNullOrEmpty( key ) && (Input.Keyboard.Down( key ) || _simulatedNow.Contains( key ));

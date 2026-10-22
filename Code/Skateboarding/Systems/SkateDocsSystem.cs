@@ -25,6 +25,9 @@ public sealed class SkateDocsSystem : GameObjectSystem<SkateDocsSystem>
 	{
 		if ( Scene.IsEditor || Application.IsDedicatedServer )
 			return;
+		// The board editor has the keys while it is open.
+		if ( Engine.BoardEditing.BoardEditor.IsOpen )
+			return;
 		if ( SkateDocs.IsOpen )
 		{
 			_docs?.Frame();

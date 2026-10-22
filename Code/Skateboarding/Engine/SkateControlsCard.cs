@@ -194,8 +194,9 @@ internal sealed class SkateControlsCard : Panel
 		}
 		_shownFor -= Time.Delta;
 		_still = speed < StillSpeed ? _still + Time.Delta : 0f;
-		// Out of the way while the docs are open over the game; back as they close.
-		SetClass( "visible", _card != Card.None && !Docs.SkateDocs.IsOpen && (_shownFor > 0f || _still > StillShow) );
+		// Out of the way while the docs or the board editor are open over the game; back as they close.
+		SetClass( "visible", _card != Card.None && !Docs.SkateDocs.IsOpen && !BoardEditing.BoardEditor.IsOpen
+			&& (_shownFor > 0f || _still > StillShow) );
 	}
 
 	private void Build()
@@ -239,7 +240,8 @@ internal sealed class SkateControlsCard : Panel
 					(new[] { new Key( Action: SandboxActions.Ollie ) }, "Jump"),
 					(new[] { new Key( "use" ) }, "Tap to ride on"),
 					(new[] { new Key( "use" ) }, "Hold to drop"),
-					(new[] { new Key( "throw" ) }, "Throw")
+					(new[] { new Key( "throw" ) }, "Throw"),
+					(new[] { new Key( "board-editor" ) }, "Look it over")
 				}
 			};
 		}
