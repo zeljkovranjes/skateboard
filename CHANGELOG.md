@@ -46,6 +46,8 @@ Running into a kicker on foot - running at a kicker with the board in hand no lo
 Scripted input between physics steps - the docs clips' scripted controls reach the skater's animation every frame, not only on physics steps (a scripted grab let go and grabbed again in the air); real controls were never affected
 Hand plant let go smoothly - the board drops back in from a hand plant turning nose down over a quarter second instead of flipping round in one frame, and the skater turns with it; the drop lands where it did
 Docs: front and back flips taken out until they can be done from a real ramp or drop (they were only ever reached from a test lift)
+Smooth flip kicks - as the board flips under the feet, the lift that keeps them out of its way and the board's drop below them ease in and out instead of starting and stopping at full speed, so the back foot no longer jerks as a heelflip or kickflip leaves the ground
+Hand plant let go - the rider turns back from the plant along the turn it had as the hand left the lip, instead of swinging round as the board comes level
 Rolling back down a slope - the skater no longer jumps sideways as the board turns round and rolls back (or as you push off from fakie)
 Tricks that land - the board no longer spins back after a shove-it, varial, hardflip or inward heelflip (it turned its whole half spin back in the air and landed up to 60 degrees round): it lands the way it was caught, flips are caught all the way round before you land, and a wind-up held diagonally no longer flickers between two wind-ups
 Braking foot on the ground - slowing down, the dragging foot now touches the ground instead of hanging about 3 in over it
