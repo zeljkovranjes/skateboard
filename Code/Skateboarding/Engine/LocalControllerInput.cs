@@ -16,6 +16,9 @@ internal static class LocalControllerInput
 	/// </summary>
 	internal static ControllerReading Read()
 	{
+		// A script's controller (SkateBindings.SimulatedSticks), for tests and recordings without one connected.
+		if ( SkateBindings.SimulatedSticks is { } simulated )
+			return simulated;
 		if ( Input.Suppressed || Input.ControllerCount == 0 )
 		{
 			return default;

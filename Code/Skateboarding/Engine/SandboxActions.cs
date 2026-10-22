@@ -25,6 +25,10 @@ internal static class SandboxActions
 	/// <summary>Gets on and off the board (keyboard E, controller X: Sandbox's Use).</summary>
 	internal const string GetOff = "Use";
 
+	// On foot with the board in hand the player jumps and sprints with the game's own keys.
+	internal const string Jump = "Jump";
+	internal const string Sprint = "Run";
+
 	/// <summary>
 	/// The trick keys, one trick each (<see cref="TrickButtons.Tricks"/>): Q and 1 to 4, the game's spawn menu and first
 	/// inventory slots, which a ride takes for itself (<see cref="Systems.RideKeys"/>).

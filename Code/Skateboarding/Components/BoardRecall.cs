@@ -21,7 +21,7 @@ public sealed class BoardRecall : GameObjectSystem
 
 	private void Update()
 	{
-		if ( !Input.Down( SandboxActions.GetOff ) )
+		if ( !SkateBindings.Held( "use" ) )
 		{
 			_held = 0f;
 			_spent = false;

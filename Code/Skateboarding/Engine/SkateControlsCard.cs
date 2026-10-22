@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Sandbox;
 using Sandbox.UI;
 
@@ -6,7 +8,8 @@ namespace Skateboarding.Engine;
 /// <summary>
 /// The board's controls, shown the way Sandbox shows a tool's (its tool info panel, top left, where the player's own tool
 /// info would be: that tool is put away while the skater stands in): the board's name, a line about it and its keys, one
-/// card for riding and one for carrying it, keyboard or controller as the player is using. It shows as the player gets
+/// card for riding and one for carrying it, keyboard or controller as the player is using, each key as the player
+/// has it bound (SkateBindings), the docs' key first. It shows as the player gets
 /// on or picks the board up and fades after a few seconds, and comes back whenever the skater stands still.
 /// </summary>
 internal sealed class SkateControlsCard : Panel
@@ -134,6 +137,13 @@ internal sealed class SkateControlsCard : Panel
 			text-transform: uppercase;
 			color: rgba( 255, 255, 255, 0.92 );
 		}
+		SkateControlsCard .key-text
+		{
+			font-size: 13px;
+			font-weight: 700;
+			text-transform: uppercase;
+			color: rgba( 255, 255, 255, 0.55 );
+		}
 		@keyframes skate-card-grid
 		{
 			from { transform: translate( 0px, 0px ); }
@@ -143,8 +153,10 @@ internal sealed class SkateControlsCard : Panel
 
 	private enum Card { None, Riding, Carrying }
 
-	// A key: an action's glyph, or a controller stick's.
-	private readonly record struct Key( string Action, InputAnalog? Stick = null );
+	// A hint's key: a skate binding's (its key, or what does it on a controller, as the player has it), the game's own
+	// action for a walk control the board leaves to the game (jumping with the board in hand), or a bit of text between
+	// keys.
+	private readonly record struct Key( string Binding = null, string Action = null, string Text = null );
 
 	private Card _card;
 	private bool _controller;
@@ -154,6 +166,13 @@ internal sealed class SkateControlsCard : Panel
 	internal SkateControlsCard()
 	{
 		StyleSheet.Parse( Styles );
+		SkateBindings.Changed += Build;
+	}
+
+	public override void OnDeleted()
+	{
+		SkateBindings.Changed -= Build;
+		base.OnDeleted();
 	}
 
 	/// <summary>Follows the skater: riding or carrying the board (any other mode shows nothing) and how fast it goes.</summary>
@@ -187,9 +206,10 @@ internal sealed class SkateControlsCard : Panel
 		header.AddChild<Panel>( "accent" );
 		header.AddChild<Panel>( "grid-mask" ).AddChild<Panel>( "grid" );
 		header.AddChild<Label>( "title" ).Text = "Skateboard";
+		var docs = _controller ? SkateBindings.Get( "docs" )?.Pad : SkateBindings.KeyLabel( "docs" );
 		header.AddChild<Label>( "description" ).Text = _card == Card.Riding
-			? "Push off, ollie, flip, grab and grind. Land it clean or you bail."
-			: "Board in hand. Throw it down to ride on, or set it down.";
+			? $"Push off, flip, grab and grind. Press {docs} for the full docs."
+			: $"Board in hand. Throw it down to ride on. Press {docs} for the full docs.";
 		foreach ( var row in Rows() )
 		{
 			var hints = AddChild<Panel>( "hints" );
@@ -198,25 +218,27 @@ internal sealed class SkateControlsCard : Panel
 				var hint = hints.AddChild<Panel>( "hint" );
 				var glyphs = hint.AddChild<Panel>( "keys" );
 				foreach ( var key in keys )
-					Glyph( glyphs, key );
+					Glyph( glyphs, key, _controller );
 				hint.AddChild<Label>( "text" ).Text = text;
 			}
 		}
 	}
 
-	// The card's rows of keys and what they do, on the keyboard or the controller (SandboxActions).
+	// The card's rows of keys and what they do, on the keyboard or the controller, the docs first.
 	private (Key[] Keys, string Text)[][] Rows()
 	{
+		var docs = (new[] { new Key( "docs" ) }, "Docs");
 		if ( _card == Card.Carrying )
 		{
 			return new[]
 			{
 				new[]
 				{
-					(new[] { new Key( SandboxActions.Ollie ) }, "Jump"),
-					(new[] { new Key( SandboxActions.GetOff ) }, "Ride on"),
-					(new[] { new Key( SandboxActions.GetOff ) }, "Hold to drop"),
-					(new[] { new Key( SandboxActions.Catch ) }, "Throw")
+					docs,
+					(new[] { new Key( Action: SandboxActions.Ollie ) }, "Jump"),
+					(new[] { new Key( "use" ) }, "Tap to ride on"),
+					(new[] { new Key( "use" ) }, "Hold to drop"),
+					(new[] { new Key( "throw" ) }, "Throw")
 				}
 			};
 		}
@@ -226,45 +248,55 @@ internal sealed class SkateControlsCard : Panel
 			{
 				new[]
 				{
-					(new[] { new Key( null, InputAnalog.LeftStickX ) }, "Steer"),
-					(new[] { new Key( SandboxActions.PadPush ) }, "Push"),
-					(new[] { new Key( SandboxActions.PadBrake ) }, "Brake"),
-					(new[] { new Key( SandboxActions.PadSlide ) }, "Slide"),
-					(new[] { new Key( SandboxActions.PadPump ) }, "Pump")
+					docs,
+					(new[] { new Key( "steer-left" ) }, "Steer"),
+					(new[] { new Key( "ollie" ) }, "Ollie and tricks"),
+					(new[] { new Key( "push" ) }, "Push"),
+					(new[] { new Key( "brake" ) }, "Brake")
 				},
 				new[]
 				{
-					(new[] { new Key( null, InputAnalog.RightStickX ) }, "Ollie and flip"),
-					(new[] { new Key( SandboxActions.Catch ) }, "Catch"),
-					(new[] { new Key( SandboxActions.GetOff ) }, "Get off")
+					(new[] { new Key( "grab-front" ), new Key( "grab-back" ) }, "Grab"),
+					(new[] { new Key( "powerslide" ) }, "Slide"),
+					(new[] { new Key( "catch" ) }, "Catch"),
+					(new[] { new Key( "use" ) }, "Get off")
 				}
 			};
 		}
+		var tricks = SkateBindings.All.Where( binding => binding.Group == "Trick keys" ).ToArray();
+		var trickKeys = tricks.Length == 0 ? Array.Empty<Key>()
+			: new[] { new Key( tricks[ 0 ].Id ), new Key( Text: "to" ), new Key( tricks[ ^1 ].Id ) };
 		return new[]
 		{
 			new[]
 			{
-				(new[] { new Key( SandboxActions.Push ) }, "Push"),
-				(new[] { new Key( SandboxActions.Brake ) }, "Brake"),
-				(new[] { new Key( "Left" ), new Key( "Right" ) }, "Steer"),
-				(new[] { new Key( SandboxActions.Ollie ) }, "Ollie"),
-				(new[] { new Key( SandboxActions.Slide ) }, "Slide")
+				docs,
+				(new[] { new Key( "push" ) }, "Push"),
+				(new[] { new Key( "brake" ) }, "Brake"),
+				(new[] { new Key( "steer-left" ), new Key( "steer-right" ) }, "Steer"),
+				(new[] { new Key( "ollie" ) }, "Ollie")
 			},
 			new[]
 			{
-				(new[] { new Key( SandboxActions.FlipLeft ), new Key( SandboxActions.FlipRight ) }, "Flip"),
-				(new[] { new Key( SandboxActions.Flick ) }, "Flick tricks"),
-				(new[] { new Key( SandboxActions.GrabFront ), new Key( SandboxActions.GrabBack ) }, "Grab"),
-				(new[] { new Key( SandboxActions.GetOff ) }, "Get off")
+				(trickKeys, "Tricks"),
+				(new[] { new Key( "grab-front" ), new Key( "grab-back" ) }, "Grab"),
+				(new[] { new Key( "manual" ) }, "Manual"),
+				(new[] { new Key( "powerslide" ) }, "Slide"),
+				(new[] { new Key( "use" ) }, "Get off")
 			}
 		};
 	}
 
-	// One key's glyph, as wide as its texture is for the key's height (long key names are wider).
-	private static void Glyph( Panel parent, Key key )
+	// One key's glyph, as wide as its texture is for the key's height (long key names are wider), or a bit of text.
+	private static void Glyph( Panel parent, Key key, bool controller )
 	{
-		var texture = key.Stick is { } stick
-			? Input.GetGlyph( stick, InputGlyphSize.Medium, false )
+		if ( key.Text is { } text )
+		{
+			parent.AddChild<Label>( "key-text" ).Text = text;
+			return;
+		}
+		var texture = key.Binding is { } binding
+			? controller ? SkateBindings.PadGlyph( binding ) : SkateBindings.KeyGlyph( binding )
 			: Input.GetGlyph( key.Action, InputGlyphSize.Medium, false );
 		var glyph = parent.AddChild<Image>( "key" );
 		glyph.Texture = texture;

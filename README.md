@@ -15,39 +15,52 @@ you ragdoll, then get up on foot where you landed. It works in multiplayer and i
 While you ride, your own Sandbox player is put away: its movement, tools and body are switched off, and the skater on
 the deck takes its place, followed by the skate camera. The HUD's hotbar and health are hidden while you ride the board
 and come back when you get off or carry it; the rest of the HUD stays as it is. A controls card, styled like Sandbox's
-own tool info, shows the board's keys top left (riding or carrying, keyboard or controller, with your bound keys) as you
-get on or pick the board up, fades after a few seconds and comes back whenever you stand still.
+own tool info, shows the board's main keys top left (riding or carrying, keyboard or controller, as you have them bound,
+the docs key first) as you get on or pick the board up, fades after a few seconds and comes back whenever you stand
+still.
 
-### Keyboard and mouse
+Press **Q** while riding or carrying the board (**View** on a controller) to open the docs: every move, what it is and
+how to do it on keyboard and controller, with a clip of each. Every key is rebindable on the docs' **Keybinds** page; your
+keys are saved and shown everywhere (the docs and the controls card) as you have them.
+
+### Keyboard and mouse (defaults)
 
 | Action | Key |
 | --- | --- |
-| Push / brake | W / S |
-| Steer | A / D |
-| Ollie (hold to crouch, let go to pop) | Space |
-| Kickflip / heelflip (hold with Space) | Alt / X |
-| Flick tricks (hold, then move the mouse: pull down, flick up) | Right mouse |
-| Kickflip / shove-it / heelflip / varial flip / 360 flip (hold, let go to pop) | Q / 1 / 2 / 3 / 4 |
-| Catch a flip | Left mouse |
+| Push / brake / steer | W / S / A, D |
+| Ollie / nollie (hold to crouch, let go to pop) | Space / Z |
+| Kickflip / heelflip (held as you let go of Space or Z) | Alt / X |
+| Trick keys: kickflip, shove-it, heelflip, varial kickflip, 360 flip, hardflip, varial heelflip, inward heelflip, laser flip, frontside shove-it, 360 shove-it (hold Z with one for its nollie version) | 1 to 0, - |
+| Flick tricks (hold, then move the mouse like a stick) | Right mouse |
+| Dark catch (during a flip) | Left mouse |
+| Grab front / back hand (in the air) | R / F |
+| Manual / nose manual (hold; on a rail, tip to the tail / nose) | C / B |
 | Powerslide (hold) / revert (tap) | Shift |
 | Pump | Ctrl |
-| Grab front / back (in the air) | R / F |
 | Hand plant | G |
-| Hippy jump | Hold W and S together, then let go |
-| Get on / off | E |
+| Hippy jump | H (or hold W and S, then let go) |
+| Coffin | Y |
+| Bail | T |
+| Get off | E |
+| Docs | Q |
+
+While you ride the board has the keyboard to itself (Sandbox's menus, hotbar and undo wait until you get off); voice
+chat, chat and the scoreboard stay the game's. V, Tab, Enter, Esc and ` can't be bound.
 
 ### Controller
 
 | Action | Button |
 | --- | --- |
-| Steer | Left stick |
-| Flick tricks (pull down, flick up or to a side) | Right stick |
-| Push / brake | A / B |
-| Powerslide (hold) / revert (tap) | Left trigger |
-| Pump | Left stick click |
-| Get on / off | X |
-
-Y and the bumpers are left to the game (the bumpers open the spawn and inspect menus).
+| Steer (with a grab held: up front flip, down back flip) | Left stick |
+| Tricks, manuals (held part way), rail tips, grab picks | Right stick |
+| Push / brake / hippy jump | A / B / A and B |
+| Powerslide or revert; front-hand grab in the air | Left trigger |
+| Back-hand grab | Right trigger |
+| Pump (left stick held forward); one foot off in the air | Left stick click |
+| Dark catch | Right stick click |
+| Hand plant / coffin / ground grab / bail | D-pad up / right / left / down |
+| Get off | X |
+| Docs | View |
 
 ### Carrying the board
 

@@ -5,7 +5,7 @@
   "Ident": "chomnr_skateboard",
   "Schema": 1,
   "IncludeSourceFiles": false,
-  "Resources": "skater/*",
+  "Resources": "skater/*\ndocs/*",
   "PackageReferences": [],
   "EditorReferences": null,
   "Mounts": null,

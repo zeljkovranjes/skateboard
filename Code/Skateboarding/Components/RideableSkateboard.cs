@@ -92,8 +92,6 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 	// The board's controls card, on a screen panel of its own scaled as the game's HUD is, just above it.
 	private GameObject _cardScreen;
 	private SkateControlsCard _card;
-	// The trick keys, on the same screen panel, bottom left.
-	private SkateTrickKeys _trickKeys;
 	private readonly List<GameObject> _hiddenHud = new();
 	private bool _hudHidden;
 	private GameObject _dressed;
@@ -367,14 +365,15 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		UpdateCard( rider );
 		HandBackWhenDone( rider );
 		ReadUse( rider );
-		if ( rider.Mode == SkateRiderMode.Carrying && !rider.IsInteracting && Input.Pressed( SandboxActions.Catch ) )
+		if ( rider.Mode == SkateRiderMode.Carrying && !rider.IsInteracting && SkateBindings.Toggled( "throw" ) )
 			rider.RequestThrow();
 	}
 
-	// Use, riding: gets off at once. Carrying: a tap throws the board down to ride, a hold drops it.
+	// The use control (SkateBindings), riding: gets off at once. Carrying: a tap throws the board down to ride, a hold
+	// drops it.
 	private void ReadUse( SkateRider rider )
 	{
-		if ( !Input.Down( SandboxActions.GetOff ) )
+		if ( !SkateBindings.Held( "use" ) )
 		{
 			if ( _useLetGo && _useHeld > 0f && !_useSpent && rider.Mode == SkateRiderMode.Carrying && !rider.IsInteracting )
 				rider.RequestMount();
@@ -484,13 +483,11 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 			if ( root is null )
 				return;
 			_card = new SkateControlsCard { Parent = root };
-			_trickKeys = new SkateTrickKeys { Parent = root };
 		}
 		var speed = rider.Mode == SkateRiderMode.Riding
 			? Board.State.Speed
 			: rider.Walker.Velocity.WithZ( 0f ).Length / SkateUnits.InchesPerMetre;
 		_card.Tick( rider.Mode, speed );
-		_trickKeys?.Tick( rider.Mode == SkateRiderMode.Riding );
 	}
 
 	private void FindHud()
@@ -554,7 +551,6 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 			_cardScreen.Destroy();
 		_cardScreen = null;
 		_card = null;
-		_trickKeys = null;
 		if ( _gameCamera.IsValid() )
 			_gameCamera.Enabled = true;
 		_gameCamera = null;
