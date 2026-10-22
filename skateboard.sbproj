@@ -5,7 +5,7 @@
   "Ident": "chomnr_skateboard",
   "Schema": 1,
   "IncludeSourceFiles": false,
-  "Resources": "skater/*\ndocs/*",
+  "Resources": "skater/*.sman\nskater/*.smat\nskater/*.json\nskater/community_portraits/portraits.json\ndocs/clips/*.webp",
   "PackageReferences": [],
   "EditorReferences": null,
   "Mounts": null,

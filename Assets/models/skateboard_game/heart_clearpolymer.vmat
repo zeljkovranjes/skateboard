@@ -1,0 +1,10 @@
+"Layer0"
+{
+	"shader" "shaders/complex.shader"
+	"TextureColor" "models/skateboard_game/textures/heart_glass_color.png"
+	"TextureRoughness" "models/skateboard_game/textures/heart_glass_rough.png"
+	"g_flMetalness" "0"
+	"F_TRANSLUCENT" "1"
+	"TextureTranslucency" "models/skateboard_game/textures/heart_glass_opacity.png"
+	"g_flOpacityScale" "1"
+}

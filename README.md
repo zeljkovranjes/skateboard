@@ -23,6 +23,13 @@ Press **Q** while riding or carrying the board (**View** on a controller) to ope
 how to do it on keyboard and controller, with a clip of each. Every key is rebindable on the docs' **Keybinds** page; your
 keys are saved and shown everywhere (the docs and the controls card) as you have them.
 
+The board is a salvaged street sign: a bent green S&BOX AVE sign on roller-skate wheels and door-hinge axles, with 38
+stickers, 270 community portraits underneath and a salvaged mechanical heart in a glass case, whose oil sloshes as you
+ride. Carrying it, press **I** (D-pad up) to look it over in the board editor: turn and zoom it, click a portrait
+underneath to see who it is, and pick **Edit** at the top to colour it: the sign's paint, the wheels, the axles and the
+heart's oil. Everyone sees your colours, and they are saved on your computer, so any board you pick up or ride takes
+them, next time too. **Reset** brings back the board as delivered.
+
 ### Keyboard and mouse (defaults)
 
 | Action | Key |

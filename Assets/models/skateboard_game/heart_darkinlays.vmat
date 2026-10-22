@@ -1,0 +1,9 @@
+"Layer0"
+{
+	"shader" "shaders/complex.shader"
+	"TextureColor" "models/skateboard_game/textures/neutral_white.png"
+	"g_vColorTint" "[0.035 0.035 0.038 1]"
+	"TextureRoughness" "models/skateboard_game/textures/neutral_white.png"
+	"g_flRoughnessScaleFactor" "0.64"
+	"g_flMetalness" "0"
+}

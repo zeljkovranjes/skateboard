@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Sandbox;
+using Skateboarding.Engine.Finish;
 
 namespace Skateboarding.Engine.BoardEditing;
 
@@ -23,6 +24,10 @@ internal sealed class BoardEditorStage
 	private readonly GameObject _camera;
 	private GameObject _copy;
 	private BoardEditorPortraits _portraits;
+	// The copy's deck, the board's model, and the placement taking the model's space into the deck's (for the oil bath).
+	private GameObject _deck;
+	private Model _model;
+	private global::Transform _placement;
 
 	internal BoardEditorStage( Scene scene )
 	{
@@ -110,6 +115,22 @@ internal sealed class BoardEditorStage
 			camera.FovAxis = CameraComponent.Axis.Vertical;
 			_camera.Components.GetOrCreate<Highlight>();
 			Portraits.Attach( _scene, deckPart, placement, parts?.Placement.Rotation ?? Rotation.Identity );
+			_deck = deckPart;
+			_model = skateboard?.BoardModel;
+			_placement = placement;
+		}
+	}
+
+	/// <summary>Draws the board's copy in <paramref name="look"/>'s colours, with its oil bath where it has the heart.</summary>
+	internal void Finish( BoardLook look )
+	{
+		if ( !_copy.IsValid() )
+			return;
+		using ( _scene.Push() )
+		{
+			BoardFinishRenderers.Apply( _copy.Components.GetAll<ModelRenderer>( FindMode.EverythingInSelfAndDescendants ),
+				look, BoardFinishMaterials.Shared );
+			BoardFinishRenderers.Oil( _deck, _model, _placement, look, BoardFinishMaterials.Shared );
 		}
 	}
 

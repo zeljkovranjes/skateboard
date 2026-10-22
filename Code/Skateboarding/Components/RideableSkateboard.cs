@@ -49,6 +49,12 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 	/// <summary>When (host time) its owner last took it: of several boards of theirs, the latest is the one called back.</summary>
 	[Sync( SyncFlags.FromHost )] public float OwnedAt { get; set; }
 
+	/// <summary>
+	/// How the board is finished (an <see cref="Engine.Finish.BoardLook"/>, as text; empty as delivered): the colours its
+	/// rider picked, which every client draws it in (<see cref="Systems.BoardFinishSystem"/>).
+	/// </summary>
+	[Sync( SyncFlags.FromHost )] public string Look { get; set; }
+
 	/// <summary>Farthest (metres) the owner calls the board back to the hand from; it flies through whatever is between.</summary>
 	[Property] public float RecallRange { get; set; } = 2000f;
 
@@ -234,6 +240,19 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 
 	/// <summary>Calls the player's own board back to their hand from wherever it is (asked of the host).</summary>
 	internal void Recall( GameObject player ) => RequestRecall( player );
+
+	/// <summary>Asks the host to finish the board as <paramref name="look"/>; only its rider (or carrier) or owner may.</summary>
+	internal void Finish( Engine.Finish.BoardLook look ) => RequestLook( look.Encode() );
+
+	/// <summary>Host: finishes the board as the asking player picked, when it is theirs or in their hands.</summary>
+	[Rpc.Host]
+	private void RequestLook( string look )
+	{
+		var caller = Rpc.Caller ?? Connection.Local;
+		if ( caller is null || caller.Id != RiderConnection && caller.Id != OwnerId )
+			return;
+		Look = Engine.Finish.BoardLook.Decode( look ).Encode();
+	}
 
 	/// <summary>Host: puts the asking player on the board, or has them pick it up, when no one else has it.</summary>
 	[Rpc.Host]

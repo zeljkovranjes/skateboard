@@ -13,22 +13,24 @@
 						_class = "DefaultMaterialGroup"
 						remaps =
 						[
-							{ from = "MAT_GripTape_Black_GAME" to = "models/skateboard_game/mat_griptape_black_game.vmat" },
-							{ from = "MAT_GripTape_Black_GAME.vmat" to = "models/skateboard_game/mat_griptape_black_game.vmat" },
-							{ from = "GAME_deck" to = "models/skateboard_game/game_deck.vmat" },
-							{ from = "GAME_deck.vmat" to = "models/skateboard_game/game_deck.vmat" },
-							{ from = "GAME_hardware" to = "models/skateboard_game/game_hardware.vmat" },
-							{ from = "GAME_hardware.vmat" to = "models/skateboard_game/game_hardware.vmat" },
+							{ from = "GAME_salvage" to = "models/skateboard_game/game_salvage.vmat" },
+							{ from = "GAME_salvage.vmat" to = "models/skateboard_game/game_salvage.vmat" },
+							{ from = "GAME_salvage_paint" to = "models/skateboard_game/game_salvage_paint.vmat" },
+							{ from = "GAME_salvage_paint.vmat" to = "models/skateboard_game/game_salvage_paint.vmat" },
+							{ from = "GAME_salvage_rubber" to = "models/skateboard_game/game_salvage_rubber.vmat" },
+							{ from = "GAME_salvage_rubber.vmat" to = "models/skateboard_game/game_salvage_rubber.vmat" },
+							{ from = "GAME_salvage_hinge" to = "models/skateboard_game/game_salvage_hinge.vmat" },
+							{ from = "GAME_salvage_hinge.vmat" to = "models/skateboard_game/game_salvage_hinge.vmat" },
 							{ from = "GAME_stickers" to = "models/skateboard_game/game_stickers.vmat" },
 							{ from = "GAME_stickers.vmat" to = "models/skateboard_game/game_stickers.vmat" },
 							{ from = "MAT_CommunityPortraits" to = "models/skateboard_game/mat_communityportraits.vmat" },
 							{ from = "MAT_CommunityPortraits.vmat" to = "models/skateboard_game/mat_communityportraits.vmat" },
-							{ from = "MAT_Deck_ChargedChannels_GAME" to = "models/skateboard_game/mat_deck_chargedchannels_game.vmat" },
-							{ from = "MAT_Deck_ChargedChannels_GAME.vmat" to = "models/skateboard_game/mat_deck_chargedchannels_game.vmat" },
-							{ from = "MAT_Gravity_ChargeIndicator_GAME" to = "models/skateboard_game/mat_gravity_chargeindicator_game.vmat" },
-							{ from = "MAT_Gravity_ChargeIndicator_GAME.vmat" to = "models/skateboard_game/mat_gravity_chargeindicator_game.vmat" },
-							{ from = "MAT_Powered_SboxBlue_GAME" to = "models/skateboard_game/mat_powered_sboxblue_game.vmat" },
-							{ from = "MAT_Powered_SboxBlue_GAME.vmat" to = "models/skateboard_game/mat_powered_sboxblue_game.vmat" },
+							{ from = "MAT_Heart_BlackOil" to = "models/skateboard_game/heart_blackoil.vmat" },
+							{ from = "MAT_Heart_BlackOil.vmat" to = "models/skateboard_game/heart_blackoil.vmat" },
+							{ from = "MAT_Heart_ClearPolymer_Portable" to = "models/skateboard_game/heart_clearpolymer.vmat" },
+							{ from = "MAT_Heart_ClearPolymer_Portable.vmat" to = "models/skateboard_game/heart_clearpolymer.vmat" },
+							{ from = "MAT_Heart_DarkInlays" to = "models/skateboard_game/heart_darkinlays.vmat" },
+							{ from = "MAT_Heart_DarkInlays.vmat" to = "models/skateboard_game/heart_darkinlays.vmat" },
 						]
 						use_global_default = false
 						global_default_material = ""

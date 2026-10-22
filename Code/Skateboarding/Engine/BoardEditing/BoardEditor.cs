@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Sandbox;
 using Sandbox.UI;
+using Skateboarding.Engine.Finish;
 
 namespace Skateboarding.Engine.BoardEditing;
 
@@ -15,7 +16,8 @@ namespace Skateboarding.Engine.BoardEditing;
 /// board aside to the left, and then who it is comes in from the right (Esc or a click off it lets it go: the words go
 /// out to the right, then the board comes back to the middle). Its modes, Inspect and Edit, stand along the top
 /// (<see cref="BoardEditorModes"/>); it opens in Inspect. Edit pushes the board aside as a pick does, and the board's
-/// settings come in from the right (<see cref="BoardEditorEdit"/>); Esc or Done goes back to Inspect.
+/// colours come in from the right (<see cref="BoardEditorEdit"/>): each pick shows on the board here at once, goes onto
+/// the board itself for everyone to see, and is kept as the player's own board. Esc or Done goes back to Inspect.
 /// </summary>
 internal sealed class BoardEditor : Panel
 {
@@ -75,6 +77,8 @@ internal sealed class BoardEditor : Panel
 	// of them.
 	private BoardEditorCard _card;
 	private BoardEditorEdit _edit;
+	// The board being looked over, whose colours Edit changes.
+	private Components.RideableSkateboard _board;
 	private BoardEditorModes _modes;
 	private Vector2 _pressedAt;
 	private RealTimeSince _sincePressed;
@@ -101,6 +105,7 @@ internal sealed class BoardEditor : Panel
 		_card = AddChild<Panel>( "card-slot" ).AddChild<BoardEditorCard>( "card" );
 		_edit = AddChild<Panel>( "edit-slot" ).AddChild<BoardEditorEdit>( "edit" );
 		_edit.Done = () => _modes?.Select( BoardEditorModes.Inspect );
+		_edit.Changed = Finished;
 		_modes = AddChild<BoardEditorModes>( "modes" );
 		_modes.Changed = ModeChanged;
 	}
@@ -132,6 +137,8 @@ internal sealed class BoardEditor : Panel
 	internal void Open( GameObject board, Scene scene, IEnumerable<GameObject> hide )
 	{
 		_stage.Build( board );
+		_board = board.Components.Get<Components.RideableSkateboard>( FindMode.EverythingInSelfAndDescendants );
+		_stage.Finish( BoardLook.Decode( _board?.Look ) );
 		Reset();
 		_shownYaw = _yaw;
 		_shownPitch = _pitch;
@@ -306,11 +313,14 @@ internal sealed class BoardEditor : Panel
 	}
 
 	// A mode put in use along the top. Edit lets a picked portrait go and pushes the board aside, as a pick does, and then
-	// the board's settings come in; Inspect sends them out to the right and brings the board back to the middle.
+	// the board's colours come in, showing its look; Inspect sends them out to the right and brings the board back to the
+	// middle.
 	private void ModeChanged( int mode )
 	{
 		if ( mode == BoardEditorModes.Edit )
 		{
+			if ( _edit is not null )
+				_edit.Look = BoardLook.Decode( _board?.Look );
 			_stage.Portraits.Choose( -1 );
 			_coming = null;
 			Card.Hide();
@@ -349,6 +359,15 @@ internal sealed class BoardEditor : Panel
 		_coming = person;
 		_sinceComing = 0f;
 		Aside( 1f, 0f );
+	}
+
+	// A colour picked in Edit: the editor's board shows it at once, the board itself takes it (the host sets it, and
+	// every client draws it), and it is kept as the player's own board for next time.
+	private void Finished( BoardLook look )
+	{
+		_stage.Finish( look );
+		_board?.Finish( look );
+		BoardLookStore.Save( look );
 	}
 
 	// The card goes out to the right, then the board comes back to the middle.

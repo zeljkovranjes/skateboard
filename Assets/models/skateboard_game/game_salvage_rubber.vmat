@@ -1,0 +1,9 @@
+"Layer0"
+{
+	"shader" "shaders/complex.shader"
+	"TextureColor" "models/skateboard_game/textures/salvage_color.png"
+	"TextureRoughness" "models/skateboard_game/textures/salvage_rough.png"
+	"F_METALNESS_TEXTURE" "1"
+	"TextureMetalness" "models/skateboard_game/textures/salvage_metal.png"
+	"g_vColorTint" "[0.2147 0.2241 0.2258 1]"
+}
