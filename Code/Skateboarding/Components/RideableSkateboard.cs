@@ -188,9 +188,13 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		// Spawned, the board lies free with no one on it (so it can fall asleep), until someone gets on.
 		if ( !IsProxy && RiderConnection == Guid.Empty )
 			Board.SetRiderAttached( false );
-		// It is the board of whoever spawned it, when the network says who that was.
+		// It is the board of whoever spawned it, when the network says who that was; they keep one board they spawned.
 		if ( (!Networking.IsActive || Networking.IsHost) && OwnerId == Guid.Empty && GameObject.Network.Owner is { } spawner )
+		{
 			Claim( spawner );
+			if ( !KeepOneBoard( spawner.Id ) )
+				return;
+		}
 		// The rider's clips are read once per scene, a moment's work: done as the board appears, not as someone gets on.
 		SceneSystems.Get<RiderAnimationLibrary>( Scene )?.Get( AnimationClips, AnimationGraph );
 	}
@@ -231,6 +235,21 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 
 	// The player object behind whoever pressed: the top of the presser's hierarchy.
 	private static GameObject PlayerOf( IPressable.Event e ) => e.Source.IsValid() ? e.Source.GameObject.Root : null;
+
+	// Host: a player keeps one board they spawned. Spawning another puts their older ones away, unless one of those is ridden
+	// or held (by anyone): then the new one goes instead, so no one is taken off a board. False when this one went.
+	private bool KeepOneBoard( Guid owner )
+	{
+		var older = Scene.GetAllComponents<RideableSkateboard>().Where( board => board != this && board.OwnerId == owner ).ToList();
+		if ( older.Any( board => board.RiderConnection != Guid.Empty ) )
+		{
+			GameObject.Destroy();
+			return false;
+		}
+		foreach ( var board in older )
+			board.GameObject.Destroy();
+		return true;
+	}
 
 	/// <summary>Puts the player on the board (asked of the host).</summary>
 	internal void StartRide( GameObject player ) => RequestRide( player, false );
