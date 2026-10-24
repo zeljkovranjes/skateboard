@@ -17,7 +17,7 @@ namespace Skateboarding.Components;
 /// no round trip.
 /// </summary>
 [Title( "Rideable Skateboard" ), Category( "Skate Motion" ), Icon( "skateboarding" )]
-public sealed class RideableSkateboard : Component, Component.IPressable
+public sealed class RideableSkateboard : Component, Component.IPressable, IPhysgunEvent
 {
 	/// <summary>The rider's clip set among the addon's files.</summary>
 	[Property, Group( "Animation" )] public string AnimationClips { get; set; } = "skater/skater-corrected.sman";
@@ -351,8 +351,70 @@ public sealed class RideableSkateboard : Component, Component.IPressable
 		Board.SetRiderAttached( false );
 	}
 
+	// Sandbox's physics gun picks the board up as it does any prop while no one rides or carries it: the board's own
+	// simulation stands aside while the gun holds it (Skateboard.HeldByPhysics) and takes the board back as the gun lets
+	// go, so a board thrown flies on and lands on its wheels. Frozen in the air by the gun, it stays there until unfrozen.
+	// Held by its own simulation, the board's body never moves for the gun (it is kinematic), and the gun's hold was
+	// overwritten every step.
+	private bool _physgunFrozen;
+
+	void IPhysgunEvent.OnPhysgunGrab( IPhysgunEvent.GrabEvent e )
+	{
+		if ( RiderConnection != Guid.Empty )
+			e.Cancelled = true;
+	}
+
+	// Raised on the client of the player picking it up; the board is simulated by its owner (whoever rode it last).
+	void IPhysgunEvent.OnPhysgunPickup() => HoldByPhysgun();
+
+	[Rpc.Owner]
+	private void HoldByPhysgun()
+	{
+		if ( RiderConnection != Guid.Empty || !Board.IsValid() || !Board.Body.IsValid() )
+			return;
+		_physgunFrozen = false;
+		Board.HeldByPhysics = true;
+		// Picked up again where the gun froze it: the gun's own unfreeze reaches only boards the host owns.
+		Board.Body.MotionEnabled = true;
+	}
+
+	// Raised where the board is simulated as the gun stops moving it: let go or thrown, the board rides on from there;
+	// frozen, it stays where it is until the gun unfreezes it.
+	void IPhysgunEvent.OnPhysgunDrop()
+	{
+		if ( IsProxy || !Board.IsValid() || !Board.HeldByPhysics )
+			return;
+		if ( Board.Body.MotionEnabled )
+			Board.HeldByPhysics = false;
+		else
+			_physgunFrozen = true;
+	}
+
+	private void PhysgunUpdate()
+	{
+		if ( !Board.IsValid() || !Board.HeldByPhysics )
+		{
+			_physgunFrozen = false;
+			return;
+		}
+		// Someone got on, or the board passed to another player, who simulates it from now.
+		if ( IsProxy || RiderConnection != Guid.Empty )
+		{
+			_physgunFrozen = false;
+			Board.HeldByPhysics = false;
+			return;
+		}
+		// Unfrozen without being picked up again: it falls and rides on from where it was.
+		if ( _physgunFrozen && Board.Body.MotionEnabled )
+		{
+			_physgunFrozen = false;
+			Board.HeldByPhysics = false;
+		}
+	}
+
 	protected override void OnUpdate()
 	{
+		PhysgunUpdate();
 		// The rider's pose as last drawn is kept before the host may take the rider off below.
 		if ( _riding )
 			KeepRiderShown();
