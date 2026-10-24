@@ -17,7 +17,7 @@ namespace Skateboarding.Components;
 /// no round trip.
 /// </summary>
 [Title( "Rideable Skateboard" ), Category( "Skate Motion" ), Icon( "skateboarding" )]
-public sealed class RideableSkateboard : Component, Component.IPressable, IPhysgunEvent
+public sealed class RideableSkateboard : Component, Component.IPressable, IPhysgunEvent, IToolgunEvent
 {
 	/// <summary>The rider's clip set among the addon's files.</summary>
 	[Property, Group( "Animation" )] public string AnimationClips { get; set; } = "skater/skater-corrected.sman";
@@ -199,7 +199,7 @@ public sealed class RideableSkateboard : Component, Component.IPressable, IPhysg
 		SceneSystems.Get<RiderAnimationLibrary>( Scene )?.Get( AnimationClips, AnimationGraph );
 	}
 
-	bool IPressable.CanPress( IPressable.Event e ) => RiderConnection == Guid.Empty && PlayerOf( e ).IsValid();
+	bool IPressable.CanPress( IPressable.Event e ) => RiderConnection == Guid.Empty && PlayerOf( e ).IsValid() && MayTake( Connection.Local );
 
 	bool IPressable.Press( IPressable.Event e )
 	{
@@ -231,7 +231,13 @@ public sealed class RideableSkateboard : Component, Component.IPressable, IPhysg
 	}
 
 	IPressable.Tooltip? IPressable.GetTooltip( IPressable.Event e ) =>
-		RiderConnection == Guid.Empty ? new IPressable.Tooltip( "Ride", "skateboarding", "Tap to ride, hold to pick up" ) : null;
+		RiderConnection == Guid.Empty && MayTake( Connection.Local ) ? new IPressable.Tooltip( "Ride", "skateboarding", "Tap to ride, hold to pick up" ) : null;
+
+	// Whether a player may ride or pick the board up. With Sandbox's prop protection on (sandbox.ownership.checks, its
+	// Ownable given to everything the spawn menu makes) a board is its owner's and admins', as any prop is theirs to
+	// physgun and toolgun: getting on someone else's board would also have made it yours.
+	private bool MayTake( Connection connection ) =>
+		Components.Get<Ownable>() is not { } ownable || Ownable.HasAccess( connection, ownable.Owner );
 
 	// The player object behind whoever pressed: the top of the presser's hierarchy.
 	private static GameObject PlayerOf( IPressable.Event e ) => e.Source.IsValid() ? e.Source.GameObject.Root : null;
@@ -291,7 +297,7 @@ public sealed class RideableSkateboard : Component, Component.IPressable, IPhysg
 	// from now.
 	private void Take( GameObject player, bool carry, Connection caller )
 	{
-		if ( RiderConnection != Guid.Empty || !player.IsValid() || caller is null )
+		if ( RiderConnection != Guid.Empty || !player.IsValid() || caller is null || !MayTake( caller ) )
 			return;
 		Claim( caller );
 		var rider = new GameObject( true, "Skate rider" );
@@ -327,6 +333,10 @@ public sealed class RideableSkateboard : Component, Component.IPressable, IPhysg
 	{
 		OwnerId = owner.Id;
 		OwnedAt = Time.Now;
+		// Sandbox's prop protection follows the same owner: a board ridden off is its rider's to physgun and toolgun too.
+		// Only an Ownable already there is updated: one made here would never reach the other players.
+		if ( Components.Get<Ownable>() is not null )
+			Ownable.Set( GameObject, owner );
 	}
 
 	/// <summary>Host: takes the rider off, leaving the board free.</summary>
@@ -364,6 +374,13 @@ public sealed class RideableSkateboard : Component, Component.IPressable, IPhysg
 			e.Cancelled = true;
 	}
 
+	// Sandbox's tool gun likewise leaves a board someone rides or carries alone: no welding, roping or removing it under them.
+	void IToolgunEvent.OnToolgunSelect( IToolgunEvent.SelectEvent e )
+	{
+		if ( RiderConnection != Guid.Empty )
+			e.Cancelled = true;
+	}
+
 	// Raised on the client of the player picking it up; the board is simulated by its owner (whoever rode it last).
 	void IPhysgunEvent.OnPhysgunPickup() => HoldByPhysgun();
 
@@ -390,11 +407,35 @@ public sealed class RideableSkateboard : Component, Component.IPressable, IPhysg
 			_physgunFrozen = true;
 	}
 
+	// Held but let go of without the gun saying so (its drop never came), the board rides on again once it has lain still
+	// on something for HeldRest seconds. Held up by the gun it never rests on anything; held pressed still to the floor, it
+	// is let go there.
+	private const float HeldRest = 1.5f;
+	private Transform? _heldStillFrom;
+	private float _heldStill;
+
+	private bool LyingStill()
+	{
+		var here = Board.WorldTransform;
+		if ( _heldStillFrom is not { } from || from.Position.Distance( here.Position ) > 0.5f
+			|| Rotation.Difference( from.Rotation, here.Rotation ).Angle() > 2f )
+		{
+			_heldStillFrom = here;
+			_heldStill = 0f;
+			return false;
+		}
+		_heldStill += Time.Delta;
+		if ( _heldStill < HeldRest )
+			return false;
+		return Scene.Trace.Ray( here.Position, here.Position + Vector3.Down * 8f ).IgnoreGameObjectHierarchy( GameObject ).Run().Hit;
+	}
+
 	private void PhysgunUpdate()
 	{
 		if ( !Board.IsValid() || !Board.HeldByPhysics )
 		{
 			_physgunFrozen = false;
+			_heldStillFrom = null;
 			return;
 		}
 		// Someone got on, or the board passed to another player, who simulates it from now.
@@ -409,7 +450,10 @@ public sealed class RideableSkateboard : Component, Component.IPressable, IPhysg
 		{
 			_physgunFrozen = false;
 			Board.HeldByPhysics = false;
+			return;
 		}
+		if ( !_physgunFrozen && LyingStill() )
+			Board.HeldByPhysics = false;
 	}
 
 	protected override void OnUpdate()
