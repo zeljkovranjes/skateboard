@@ -128,6 +128,8 @@ board.
   no round trip and the host pays for no one's board. The board stays with its last rider until it comes to rest; if
   that player leaves, the host takes it over.
 - Everyone sees every rider, dressed in that player's outfit, and every bail.
+- A player model picked with an addon that shows players as models of their own (Player Model Selector) rides too:
+  the skater's body carries the `player_body` tag such addons look for. A body model you wear yourself is kept.
 - Boards nobody rides fall asleep once they lie still and cost nothing until someone rides, moves or resets them.
 - Riders far from your camera are posed less often (every 2nd frame from 12 m, 4th from 24 m, 8th from 48 m).
 

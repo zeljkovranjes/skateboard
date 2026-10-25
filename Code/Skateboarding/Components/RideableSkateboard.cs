@@ -83,6 +83,7 @@ public sealed class RideableSkateboard : Component, Component.IPressable, IPhysg
 	private readonly List<GameObject> _stowedChildren = new();
 	private GameObject _stowedPlayer;
 	private static readonly string[] StowedComponentTypes = { "PlayerController", "Rigidbody" };
+	private const string PlayerBodyTag = "player_body";
 	private const string KeptChild = "Voice";
 
 	private GameObject _camera;
@@ -1032,6 +1033,11 @@ public sealed class RideableSkateboard : Component, Component.IPressable, IPhysg
 		_dressCompared = 0f;
 		var model = Rider.Components.Get<SkateRider>()?.VisualObject;
 		var body = model?.Components.Get<SkinnedModelRenderer>( FindMode.EverythingInSelf );
+		// The rider's body stands in for the player's: an addon that shows players as models of their own (a player model
+		// selector) finds it by this tag and shows the player's model on it, as it does on their body. Every client tags
+		// its own rider; the rider's object is the player's, which tells whose model it is.
+		if ( body.IsValid() )
+			body.GameObject.Tags.Add( PlayerBodyTag );
 		var own = PlayerBody( Player );
 		if ( !body.IsValid() || !own.IsValid() )
 			return;
