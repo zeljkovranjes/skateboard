@@ -200,7 +200,7 @@ public sealed class RideableSkateboard : Component, Component.IPressable, IPhysg
 		SceneSystems.Get<RiderAnimationLibrary>( Scene )?.Get( AnimationClips, AnimationGraph );
 	}
 
-	bool IPressable.CanPress( IPressable.Event e ) => RiderConnection == Guid.Empty && PlayerOf( e ).IsValid() && MayTake( Connection.Local );
+	bool IPressable.CanPress( IPressable.Event e ) => RiderConnection == Guid.Empty && PlayerOf( e ).IsValid();
 
 	bool IPressable.Press( IPressable.Event e )
 	{
@@ -232,13 +232,7 @@ public sealed class RideableSkateboard : Component, Component.IPressable, IPhysg
 	}
 
 	IPressable.Tooltip? IPressable.GetTooltip( IPressable.Event e ) =>
-		RiderConnection == Guid.Empty && MayTake( Connection.Local ) ? new IPressable.Tooltip( "Ride", "skateboarding", "Tap to ride, hold to pick up" ) : null;
-
-	// Whether a player may ride or pick the board up. With Sandbox's prop protection on (sandbox.ownership.checks, its
-	// Ownable given to everything the spawn menu makes) a board is its owner's and admins', as any prop is theirs to
-	// physgun and toolgun: getting on someone else's board would also have made it yours.
-	private bool MayTake( Connection connection ) =>
-		Components.Get<Ownable>() is not { } ownable || Ownable.HasAccess( connection, ownable.Owner );
+		RiderConnection == Guid.Empty ? new IPressable.Tooltip( "Ride", "skateboarding", "Tap to ride, hold to pick up" ) : null;
 
 	// The player object behind whoever pressed: the top of the presser's hierarchy.
 	private static GameObject PlayerOf( IPressable.Event e ) => e.Source.IsValid() ? e.Source.GameObject.Root : null;
@@ -298,7 +292,7 @@ public sealed class RideableSkateboard : Component, Component.IPressable, IPhysg
 	// from now.
 	private void Take( GameObject player, bool carry, Connection caller )
 	{
-		if ( RiderConnection != Guid.Empty || !player.IsValid() || caller is null || !MayTake( caller ) )
+		if ( RiderConnection != Guid.Empty || !player.IsValid() || caller is null )
 			return;
 		Claim( caller );
 		var rider = new GameObject( true, "Skate rider" );
@@ -334,7 +328,7 @@ public sealed class RideableSkateboard : Component, Component.IPressable, IPhysg
 	{
 		OwnerId = owner.Id;
 		OwnedAt = Time.Now;
-		// Sandbox's prop protection follows the same owner: a board ridden off is its rider's to physgun and toolgun too.
+		// Sandbox's owner label and cleanup follow the same owner: a board ridden off is its rider's to clean up too.
 		// Only an Ownable already there is updated: one made here would never reach the other players.
 		if ( Components.Get<Ownable>() is not null )
 			Ownable.Set( GameObject, owner );
